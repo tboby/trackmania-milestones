@@ -1,0 +1,9 @@
+[meta]
+name     = "HuntHelper"
+author   = "tboby"
+category = "Testing"
+version  = "0.0.1"
+
+[script]
+dependencies = [ "NadeoServices", "VehicleState" ]
+optional_dependencies = [ "ChampionMedals", "SBVilleCampaignChallenges" ]
