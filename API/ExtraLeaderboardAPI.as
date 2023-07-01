@@ -94,7 +94,7 @@ namespace ExtraLeaderboardAPI
     /**
      * Prepare the ExtraLeaderboardAPIRequest object based on current parameters
      */
-    ExtraLeaderboardAPIRequest@ PrepareRequest(string mapUid, bool getPlayerCount = false, bool getMapInfo = false){
+    ExtraLeaderboardAPIRequest@ PrepareRequest(const string &in mapUid, bool getPlayerCount = false, bool getMapInfo = false){
         ExtraLeaderboardAPIRequest@ request = ExtraLeaderboardAPIRequest();
         if(mapUid == ""){
             warn("No map selected");

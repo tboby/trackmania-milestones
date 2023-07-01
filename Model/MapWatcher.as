@@ -1,11 +1,10 @@
 class MapWatcher {
     string mapUid = "";
     Collect@ collect = Collect();
-    Leaderboard@ leaderboard = Leaderboard();
+    Leaderboard@ leaderboard;
     Files files;
     MapWatcher()  {
         collect.destroy();
-        leaderboard.destroy();
         startnew(CoroutineFunc(map_handler));
     }
     ~MapWatcher() {
@@ -41,7 +40,9 @@ class MapWatcher {
         files.times = collect.times;
         files.write_file();
         collect.destroy();
-        leaderboard.destroy();
+        if(!(leaderboard is null)){
+            leaderboard.destroy();
+        }
     }
 
 
@@ -52,7 +53,7 @@ class MapWatcher {
             while (!files.loaded) yield();
             collect = Collect();
             collect.times = files.times;
-            leaderboard = Leaderboard();
+            @leaderboard = Leaderboard(mapUid);
             start();
         }
     }

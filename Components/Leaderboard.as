@@ -5,7 +5,7 @@ class MapLeaderboardData {
     string mapUid;
 
     MapLeaderboardData(string mapUid){
-        mapUid = mapUid;
+        this.mapUid = mapUid;
     }
     void Initialise(){
         LoadStaticInfo();
@@ -92,13 +92,11 @@ class MapLeaderboardData {
 
 //Collect.as
 class Leaderboard : Component {
-    MapLeaderboardData data;
-    Leaderboard() {
-        super();
-    }
+    MapLeaderboardData@ data;
 
-    Leaderboard(uint64 total) {
-        super(total);
+    Leaderboard(const string &in mapUid) {
+        @data = MapLeaderboardData(mapUid);
+        super();
     }
 
     // string toString() override {
