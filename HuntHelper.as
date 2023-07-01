@@ -35,6 +35,8 @@ void Main(){
     // Load the config to use the External API or not
     ExtraLeaderboardAPI::LoadURLConfig();
 
+    @mapWatcher = MapWatcher();
+
     auto app = cast<CTrackMania>(GetApp());
     auto network = cast<CTrackManiaNetwork>(app.Network);
 
@@ -104,4 +106,4 @@ bool CanRefresh(){
 
 // Test test;
 // Resets resets;
-MapWatcher mapWatcher;
+MapWatcher@ mapWatcher;

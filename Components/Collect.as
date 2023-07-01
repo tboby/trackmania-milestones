@@ -59,4 +59,12 @@ class Collect : Component {
             yield();
         }
     }
+
+    string toString() override {
+        array<string> result;
+        for(uint i = 0; i< times.Length; i++){
+            result.InsertLast("" + TimeString(times[i]));
+        }
+        return string::Join(result, "\n");
+    };
 }

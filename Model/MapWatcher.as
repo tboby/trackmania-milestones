@@ -57,5 +57,8 @@ class MapWatcher {
             start();
         }
     }
-
+    void debug_print(){
+        print(leaderboard.toString());
+        print(collect.toString());
+    }
 }

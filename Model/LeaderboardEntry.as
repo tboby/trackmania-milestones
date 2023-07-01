@@ -52,6 +52,6 @@ class LeaderboardEntry{
     }
 
     string toString(){
-        return desc + ": " + time + ", #" + position + ", " + percentageDisplay + "%";
+        return desc + ": " + TimeString(time) + ", #" + position + ", " + percentageDisplay + "%";
     }
 }

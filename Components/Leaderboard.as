@@ -13,7 +13,7 @@ class MapLeaderboardData {
     }
 
     void RefreshPersonalBest(){
-        personalBest = GetPersonalBestEntry();
+        this.personalBest = GetPersonalBestEntry(this.mapUid);
     }
 
     void LoadStaticInfo(){
@@ -24,7 +24,7 @@ class MapLeaderboardData {
             ExtraLeaderboardAPI::ExtraLeaderboardAPIRequest@ req = null;
             try
             {
-                @req = ExtraLeaderboardAPI::PrepareRequest(mapUid, true);
+                @req = ExtraLeaderboardAPI::PrepareRequest(this.mapUid, true);
             }
             catch
             {
@@ -154,6 +154,10 @@ class Leaderboard : Component {
             // }
             yield();
         }
+    }
+
+    string toString() override {
+        return data.toString();
     }
 }
 

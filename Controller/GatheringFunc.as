@@ -4,7 +4,7 @@
 /**
  * Get the personal best time of the current map from the online leaderboard
  */
-LeaderboardEntry@ GetPersonalBestEntry() {
+LeaderboardEntry@ GetPersonalBestEntry(string mapUid) {
     auto app = cast<CTrackMania>(GetApp());
     auto network = cast<CTrackManiaNetwork>(app.Network);
     LeaderboardEntry@ pbTimeTmp = LeaderboardEntry();
@@ -19,10 +19,7 @@ LeaderboardEntry@ GetPersonalBestEntry() {
 
     //check that we're in a map
     if (network.ClientManiaAppPlayground !is null && network.ClientManiaAppPlayground.Playground !is null && network.ClientManiaAppPlayground.Playground.Map !is null){
-        string mapid = network.ClientManiaAppPlayground.Playground.Map.MapInfo.MapUid;
-
-        auto info = FetchEndpoint(NadeoServices::BaseURL() + "/api/token/leaderboard/group/Personal_Best/map/"+mapid+"/surround/0/0?onlyWorld=true");
-        print("getpb3");
+        auto info = FetchEndpoint(NadeoServices::BaseURLLive() + "/api/token/leaderboard/group/Personal_Best/map/"+mapUid+"/surround/0/0?onlyWorld=true");
         // print(info);
 
         if(info.GetType() != Json::Type::Null) {
