@@ -50,4 +50,8 @@ class LeaderboardEntry{
     bool isValid(){
         return time != -1 && position != -1 && entryType != EnumLeaderboardEntryType::UNKNOWN;
     }
+
+    string toString(){
+        return desc + ": " + time + ", #" + position + ", " + percentageDisplay + "%";
+    }
 }

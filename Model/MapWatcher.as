@@ -22,8 +22,12 @@ class MapWatcher {
             //the map has changed //we should save and then load the new map's data
             auto saving = startnew(CoroutineFunc(save));
             while (saving.IsRunning()) yield();
+            validMap = true;
             mapUid = mapId;
             startnew(CoroutineFunc(load));
+        }
+        else {
+            validMap = false;
         }
         yield();
         }

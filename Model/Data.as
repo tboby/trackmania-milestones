@@ -39,7 +39,7 @@ bool refreshPosition = false;
 
 float timerOPConfig = 0;
 float updateFrequencyOPConfig = 5*60*1000; // = minutes * One minute in sec * 1000 milliseconds per second
-bool refreshOPConfig = false;
+bool refreshOPConfig = true;
 
 //also a setting, but can't be saved, allPositionToGetStringSave is the saved counterpart
 array<int> allPositionToGet = {};

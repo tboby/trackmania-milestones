@@ -94,31 +94,23 @@ namespace ExtraLeaderboardAPI
     /**
      * Prepare the ExtraLeaderboardAPIRequest object based on current parameters
      */
-    ExtraLeaderboardAPIRequest@ PrepareRequest(bool getPlayerCount = false, bool getMapInfo = false){
+    ExtraLeaderboardAPIRequest@ PrepareRequest(string mapUid, bool getPlayerCount = false, bool getMapInfo = false){
         ExtraLeaderboardAPIRequest@ request = ExtraLeaderboardAPIRequest();
-        if(currentMapUid == ""){
+        if(mapUid == ""){
             warn("No map selected");
             return null;
         }
-        request.mapId = currentMapUid;
+        request.mapId = mapUid;
         request.getPlayerCount = getPlayerCount;
         request.getMapInfo = getMapInfo;
-        for(uint i = 0; i < allPositionToGet.Length; i++){
-            request.positions.InsertLast(allPositionToGet[i]);
-        }
+        // for(uint i = 0; i < allPositionToGet.Length; i++){
+        //     request.positions.InsertLast(allPositionToGet[i]);
+        // }
 
-        if(ShouldRequestMedal(MedalType::BRONZE)){
-            request.medals.InsertLast(MedalType::BRONZE);
-        }
-        if(ShouldRequestMedal(MedalType::SILVER)){
-            request.medals.InsertLast(MedalType::SILVER);
-        }
-        if(ShouldRequestMedal(MedalType::GOLD)){
-            request.medals.InsertLast(MedalType::GOLD);
-        }
-        if(ShouldRequestMedal(MedalType::AT)){
-            request.medals.InsertLast(MedalType::AT);
-        }
+        request.medals.InsertLast(MedalType::BRONZE);
+        request.medals.InsertLast(MedalType::SILVER);
+        request.medals.InsertLast(MedalType::GOLD);
+        request.medals.InsertLast(MedalType::AT);
 #if DEPENDENCY_CHAMPIONMEDALS
         // We rewrite the logic of the ShouldRequestMedal function since we don't want to modify the medal enum
         int champTime = ChampionMedals::GetCMTime();
