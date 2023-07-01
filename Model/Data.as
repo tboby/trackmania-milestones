@@ -46,7 +46,6 @@ array<int> allPositionToGet = {};
 
 
 array<LeaderboardEntry@> leaderboardArray;
-array<LeaderboardEntry@> leaderboardArrayTmp;
 LeaderboardEntry@ timeDifferenceEntry = LeaderboardEntry();
 
 int playerCount = -1;

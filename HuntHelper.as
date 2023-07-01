@@ -51,7 +51,7 @@ void Main(){
                 string mapid = network.ClientManiaAppPlayground.Playground.Map.MapInfo.MapUid;
                 if(MapHasNadeoLeaderboard(mapid)){
                     validMap = true;
-                    RefreshLeaderboard();
+                    // RefreshLeaderboard();
                 }else{
                     validMap = false;
                     if(leaderboardArray.Length > 0){

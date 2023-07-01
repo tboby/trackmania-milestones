@@ -89,7 +89,7 @@ int currentComboChoice = -1;
 bool shorterNumberRepresentation = false;
 
 [Setting hidden]
-bool useExternalAPI = false;
+bool useExternalAPI = true;
 
 [Setting hidden]
 bool showPlayerCount = true;
