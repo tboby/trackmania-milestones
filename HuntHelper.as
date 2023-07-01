@@ -101,3 +101,7 @@ bool CanRefresh(){
 
     return true;
 }
+
+// Test test;
+// Resets resets;
+MapWatcher mapWatcher;

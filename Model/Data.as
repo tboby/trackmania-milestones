@@ -29,7 +29,7 @@ const string redColor = "\\$f77";
 const string greyColor = "\\$888";
 const string brightGreyColor = "\\$aaa";
 
-const string pluginName = "Extra Leaderboard positions";
+const string pluginName = "Hunter Helper";
 
 string currentMapUid = "";
 

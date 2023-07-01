@@ -5,5 +5,5 @@ category = "Testing"
 version  = "0.0.1"
 
 [script]
-dependencies = [ "NadeoServices", "VehicleState" ]
+dependencies = [ "NadeoServices", "VehicleState", "PlayerState" ]
 optional_dependencies = [ "ChampionMedals", "SBVilleCampaignChallenges" ]
