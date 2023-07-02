@@ -23,7 +23,7 @@ bool isAValidMedalTime(LeaderboardEntry@ time) {
 
 /**
  * Check if the current map has a Nadeo leaderboard or not
- * 
+ *
  * Needs to be called from a yieldable function
  */
 bool MapHasNadeoLeaderboard(const string &in mapId){
@@ -73,7 +73,7 @@ string GetIconForPosition(int position){
 
 /**
  * Fetch an endpoint from the Nadeo Live Services
- * 
+ *
  * Needs to be called from a yieldable function
  */
 Json::Value FetchEndpoint(const string &in route) {
@@ -101,7 +101,7 @@ string TimeString(int scoreTime, bool showSign = false) {
             timeString += "+";
         }
     }
-    
+
     timeString += Time::Format(Math::Abs(scoreTime));
 
     return timeString;
@@ -146,4 +146,25 @@ string NumberToString(int number){
     }
 
     return numberString;
+}
+
+array<float> GetPercentagesAbovePB(float pbPercent){
+    float nearest = Math::Floor(pbPercent);
+    if(pbPercent > 10){
+        int nearestFive = Math::Floor(pbPercent / 5) * 5;
+        int nearestTen = nearestFive - 5;
+        return {nearest, nearestFive, nearestTen};
+    }
+    else if (pbPercent > 6){
+        return {nearest, nearest - 1, 5};
+    }
+    else if (pbPercent > 3){
+        return {nearest, nearest - 1, 1};
+    }
+    else if (pbPercent > 2){
+        return {nearest, 1};
+    }
+    else {
+        return {nearest};
+    }
 }

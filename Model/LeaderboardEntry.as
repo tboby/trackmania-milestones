@@ -19,7 +19,14 @@ class LeaderboardEntry{
 
     float percentage = 0.0f;
 
-    string percentageDisplay = "";
+    string percentageDisplay { get {
+            if(percentage % 1 == 0) {
+                return Text::Format("%.0f%%", percentage);
+            }
+            else {
+                return Text::Format("%.02f%%", percentage);
+            }
+         }}
 
     /**
      * Type of the entry (medal, custom, etc...)
@@ -52,6 +59,6 @@ class LeaderboardEntry{
     }
 
     string toString(){
-        return desc + ": " + TimeString(time) + ", #" + position + ", " + percentageDisplay + "%";
+        return desc + ": " + TimeString(time) + ", #" + position + ", " + percentageDisplay;
     }
 }

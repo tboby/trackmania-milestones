@@ -1,8 +1,15 @@
 class MapLeaderboardData {
     array<LeaderboardEntry@> medals;
+    array<LeaderboardEntry@> positionEntries;
     int playerCount;
     LeaderboardEntry personalBest;
     string mapUid;
+    float personalBestPercentage { get {
+        if(personalBest.time < 0){
+            return 100.0f;
+        }
+        return 100.0f * personalBest.position / playerCount;
+         }}
 
     MapLeaderboardData(string mapUid){
         this.mapUid = mapUid;
@@ -13,7 +20,11 @@ class MapLeaderboardData {
     }
 
     void RefreshPersonalBest(){
+        auto oldPb = this.personalBest;
         this.personalBest = GetPersonalBestEntry(this.mapUid);
+        if(positionEntries.Length == 0 || oldPb.time != this.personalBest.time){
+            LoadTargets();
+        }
     }
 
     void LoadStaticInfo(){
@@ -73,9 +84,62 @@ class MapLeaderboardData {
 
             for(uint i = 0; i< medalEntries.Length; i++){
                 medalEntries[i].desc = medalDesc[i];
+                medalEntries[i].percentage = (100 * medalEntries[i].position) / playerCount;
             }
             medals = medalEntries;
         }
+    }
+
+    void LoadTargets(){
+        auto percentages = GetPercentagesAbovePB(personalBestPercentage);
+        array<int> positions;
+        for(uint i = 0; i< percentages.Length; i++){
+            positions.InsertLast(Math::Round(playerCount * (percentages[i] / 100.0f)));
+        }
+
+        // Declare the response here to access it from the logging part later.
+        ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
+        // if activated, call the extra leaderboardAPI
+        if(ExtraLeaderboardAPI::Active && !ExtraLeaderboardAPI::failedAPI){
+            ExtraLeaderboardAPI::ExtraLeaderboardAPIRequest@ req = null;
+            try
+            {
+                @req = ExtraLeaderboardAPI::PrepareRequestPositions(this.mapUid, positions);
+            }
+            catch
+            {
+                // we can assume that something went wrong while trying to prepare the request. We abort the refresh and try again later
+                // also warn in the log that something went wrong
+                warn("Something went wrong while trying to prepare the request. Aborting the refresh and trying again later");
+                warn("Error message : " + getExceptionInfo());
+                failedRefresh = true;
+                return;
+            }
+
+            ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ resp = ExtraLeaderboardAPI::GetExtraLeaderboard(req);
+
+            // We extract the times from the response if there's any
+            if(resp is null){
+                warn("response from ExtraLeaderboardAPI is null or empty");
+                return;
+            }
+
+            respLog = resp;
+
+            // extract the medal entries
+            array<LeaderboardEntry@> newPositionEntries;
+            for(uint i = 0; i< resp.positions.Length; i++){
+                if(resp.positions[i].entryType != EnumLeaderboardEntryType::POSITION){
+                    continue;
+                }
+                resp.positions[i].percentage = (100 * resp.positions[i].position) / playerCount;
+                newPositionEntries.InsertLast(resp.positions[i]);
+            }
+            // sort the medal entries then add the description to them
+            newPositionEntries.SortAsc();
+            positionEntries = newPositionEntries;
+        }
+
     }
 
     string toString() {
@@ -83,6 +147,9 @@ class MapLeaderboardData {
         result.InsertLast(personalBest.toString());
         for(uint i = 0; i< medals.Length; i++){
             result.InsertLast(medals[i].toString());
+        }
+        for(uint i = 0; i< positionEntries.Length; i++){
+            result.InsertLast(positionEntries[i].toString());
         }
         result.InsertLast("PlayerCount: " + playerCount);
         return string::Join(result, "\n");

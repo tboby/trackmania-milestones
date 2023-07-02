@@ -9,7 +9,7 @@ namespace ExtraLeaderboardAPI
          * MapID of the map requested
          */
         string mapId = "";
-        
+
         /**
          * List of time you want the position of
          */

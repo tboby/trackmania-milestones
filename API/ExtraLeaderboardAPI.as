@@ -139,6 +139,21 @@ namespace ExtraLeaderboardAPI
         return request;
     }
 
+    ExtraLeaderboardAPIRequest@ PrepareRequestPositions(const string &in mapUid, array<int> positions){
+        ExtraLeaderboardAPIRequest@ request = ExtraLeaderboardAPIRequest();
+        if(mapUid == ""){
+            warn("No map selected");
+            return null;
+        }
+        request.mapId = mapUid;
+        request.getPlayerCount = false;
+        request.getMapInfo = false;
+        for(uint i = 0; i < positions.Length; i++){
+            request.positions.InsertLast(positions[i]);
+        }
+        return request;
+    }
+
 }
 
 
