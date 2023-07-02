@@ -27,19 +27,24 @@ class MapLeaderboardData {
         }
     }
 
-    void UpdatePersonalBest(int newPb){
-        int maxTries = 10;
-        int i = 0;
-        while(i < maxTries){
-            i++;
-            auto remotePb = GetPersonalBestEntry(this.mapUid);
-            if(remotePb.time == newPb && (this.personalBest.time < 0 || newPb < this.personalBest.time) && newPb > 0){
-                this.personalBest = remotePb;
-                LoadTargets();
-                return;
-            }
-            sleep(50);
-        }
+    // void UpdatePersonalBest(int newPb){
+    //     int maxTries = 10;
+    //     int i = 0;
+    //     while(i < maxTries){
+    //         i++;
+    //         auto remotePb = GetSpecificTimeEntry(this.mapUid);
+    //         if(remotePb.time == newPb && (this.personalBest.time < 0 || newPb < this.personalBest.time) && newPb > 0){
+    //             this.personalBest = remotePb;
+    //             LoadTargets();
+    //             return;
+    //         }
+    //         sleep(50);
+    //     }
+    // }
+     void UpdatePersonalBest(int newPb){
+        auto positionEntry = GetSpecificPositionEntry(this.mapUid, newPb);
+        this.personalBest.position = positionEntry.position;
+        this.personalBest.time = positionEntry.time;
     }
 
     void LoadStaticInfo(){

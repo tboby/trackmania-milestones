@@ -194,23 +194,23 @@ void SpecificTimeEntryCoroutine(ref@ position){
     }
 }
 
-void AddMedalsEntriesCoroutine(){
-    array<LeaderboardEntry@> entries = GetMedalsEntries();
-    for(uint i = 0; i< entries.Length; i++){
-        if(entries[i] !is null && entries[i].isValid()){
-            leaderboardArrayTmp.InsertLast(entries[i]);
-        }
-    }
-}
+// void AddMedalsEntriesCoroutine(){
+//     array<LeaderboardEntry@> entries = GetMedalsEntries();
+//     for(uint i = 0; i< entries.Length; i++){
+//         if(entries[i] !is null && entries[i].isValid()){
+//             leaderboardArrayTmp.InsertLast(entries[i]);
+//         }
+//     }
+// }
 
-void SpecificPositionEntryCoroutine(ref@ time){
-    // cast ref to Integer
-    Integer@ timeInt = cast<Integer@>(time);
-    LeaderboardEntry@ positionEntry = GetSpecificPositionEntry(timeInt.value);
-    if(positionEntry !is null && positionEntry.isValid()){
-        leaderboardArrayTmp.InsertLast(positionEntry);
-    }
-}
+// void SpecificPositionEntryCoroutine(ref@ time){
+//     // cast ref to Integer
+//     Integer@ timeInt = cast<Integer@>(time);
+//     LeaderboardEntry@ positionEntry = GetSpecificPositionEntry(timeInt.value);
+//     if(positionEntry !is null && positionEntry.isValid()){
+//         leaderboardArrayTmp.InsertLast(positionEntry);
+//     }
+// }
 }
 
 /**
