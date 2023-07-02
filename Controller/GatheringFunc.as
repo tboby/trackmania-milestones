@@ -29,6 +29,7 @@ LeaderboardEntry@ GetPersonalBestEntry(string mapUid) {
                 if(top.Length > 0) {
                     pbTimeTmp.time = top[0]["score"];
                     pbTimeTmp.position = top[0]["position"];
+                    print(pbTimeTmp.time + "");
                     // currentPbTime = pbTimeTmp.time;
                     // currentPbPosition = pbTimeTmp.position;
                 }

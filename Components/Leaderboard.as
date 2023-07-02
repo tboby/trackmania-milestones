@@ -27,6 +27,21 @@ class MapLeaderboardData {
         }
     }
 
+    void UpdatePersonalBest(int newPb){
+        int maxTries = 10;
+        int i = 0;
+        while(i < maxTries){
+            i++;
+            auto remotePb = GetPersonalBestEntry(this.mapUid);
+            if(remotePb.time == newPb && (this.personalBest.time < 0 || newPb < this.personalBest.time) && newPb > 0){
+                this.personalBest = remotePb;
+                LoadTargets();
+                return;
+            }
+            sleep(50);
+        }
+    }
+
     void LoadStaticInfo(){
         // Declare the response here to access it from the logging part later.
         ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
@@ -195,7 +210,9 @@ class Leaderboard : Component {
             PlayerState::sTMData@ TMData = PlayerState::GetRaceData();
             if(TMData.dEventInfo.FinishRun){
                 print("finish" + TMData.dPlayerInfo.EndTime);
-                data.RefreshPersonalBest();
+                // yield();
+                // data.RefreshPersonalBest();
+                data.UpdatePersonalBest(TMData.dPlayerInfo.EndTime);
                 print(data.toString());
             }
             else if (TMData.dEventInfo.EndRun){

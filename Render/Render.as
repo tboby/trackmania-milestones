@@ -51,7 +51,15 @@ void RenderWindows(){
 
         UI::EndGroup();
 
+        UI::BeginGroup();
+
+        RenderTarget();
+
+        UI::EndGroup();
+
         UI::End();
+
+
     }
 }
 
@@ -162,5 +170,16 @@ void RenderTab(){
     RenderTime(mapWatcher.leaderboard.data.personalBest);
 
 
+    UI::EndTable();
+}
+
+void RenderTarget(){
+    UI::BeginTable("Target", 6);
+    UI::TableNextRow();
+    auto goals = Goals(mapWatcher.collect, mapWatcher.leaderboard);
+    goals.CalculateObjective();
+    if(!(goals.target is null)){
+        RenderTime(goals.target);
+    }
     UI::EndTable();
 }
