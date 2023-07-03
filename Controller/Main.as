@@ -185,14 +185,14 @@ class LeaderboardRefresh {
 
 
 
-void SpecificTimeEntryCoroutine(ref@ position){
-    // cast ref to Integer
-    Integer@ positionInt = cast<Integer@>(position);
-    LeaderboardEntry@ timeEntry = GetSpecificTimeEntry(positionInt.value);
-    if(timeEntry !is null && timeEntry.isValid()){
-        leaderboardArrayTmp.InsertLast(timeEntry);
-    }
-}
+// void SpecificTimeEntryCoroutine(ref@ position){
+//     // cast ref to Integer
+//     Integer@ positionInt = cast<Integer@>(position);
+//     LeaderboardEntry@ timeEntry = GetSpecificTimeEntry(positionInt.value);
+//     if(timeEntry !is null && timeEntry.isValid()){
+//         leaderboardArrayTmp.InsertLast(timeEntry);
+//     }
+// }
 
 // void AddMedalsEntriesCoroutine(){
 //     array<LeaderboardEntry@> entries = GetMedalsEntries();

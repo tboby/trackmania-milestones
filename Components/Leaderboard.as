@@ -45,6 +45,7 @@ class MapLeaderboardData {
         auto positionEntry = GetSpecificPositionEntry(this.mapUid, newPb);
         this.personalBest.position = positionEntry.position;
         this.personalBest.time = positionEntry.time;
+        LoadTargets();
     }
 
     void LoadStaticInfo(){
@@ -114,8 +115,22 @@ class MapLeaderboardData {
         auto percentages = GetPercentagesAbovePB(personalBestPercentage);
         array<int> positions;
         for(uint i = 0; i< percentages.Length; i++){
+            auto input = Math::Round(playerCount * (percentages[i] / 100.0f));
+            auto position = GetSpecificTimeEntry(this.mapUid, input);
+            print(input);
+            print(TimeString(position.time));
+            print(position.position);
             positions.InsertLast(Math::Round(playerCount * (percentages[i] / 100.0f)));
         }
+        print("10k" + GetSpecificTimeEntry(this.mapUid, 10000).toString());
+        print("20k" + GetSpecificTimeEntry(this.mapUid, 20000).toString());
+        print("30k" + GetSpecificTimeEntry(this.mapUid, 30000).toString());
+        print("40k" + GetSpecificTimeEntry(this.mapUid, 40000).toString());
+        print("" + GetSpecificPositionEntry(this.mapUid, 32000).toString());
+        print("" + GetSpecificPositionEntry(this.mapUid, 33000).toString());
+        print("" + GetSpecificPositionEntry(this.mapUid, 34000).toString());
+
+
 
         // Declare the response here to access it from the logging part later.
         ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
