@@ -187,4 +187,5 @@ void RenderTarget(){
         RenderTime(goals.target);
     }
     UI::EndTable();
+    RenderBars();
 }
