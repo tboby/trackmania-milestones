@@ -1,10 +1,10 @@
 class MapWatcher {
     string mapUid = "";
-    Collect@ collect = Collect();
+    // Collect@ collect = Collect();
     Leaderboard@ leaderboard;
     Files files;
     MapWatcher()  {
-        collect.destroy();
+        // collect.destroy();
         startnew(CoroutineFunc(map_handler));
     }
     ~MapWatcher() {
@@ -18,7 +18,8 @@ class MapWatcher {
         mapId = (playground is null || playground.Map is null) ? "" : playground.Map.IdName;
         if (mapId != mapUid && app.Editor is null) {
             //the map has changed and we are not in the editor.
-            //the map has changed //we should save and then load the new map's data
+            //the map has changed
+            //we should save and then load the new map's data
             auto saving = startnew(CoroutineFunc(save));
             while (saving.IsRunning()) yield();
             validMap = true;
@@ -32,15 +33,15 @@ class MapWatcher {
         }
     }
     void start() {
-        collect.start();
+        // collect.start();
         leaderboard.start();
     }
 
     void save() {
-        files.times = collect.times;
-        files.write_file();
-        collect.destroy();
+        // collect.destroy();
         if(!(leaderboard is null)){
+            files.records = leaderboard.racingData.records;
+            files.write_file();
             leaderboard.destroy();
         }
     }
@@ -51,14 +52,16 @@ class MapWatcher {
         {
             files = Files(mapUid);
             while (!files.loaded) yield();
-            collect = Collect();
-            collect.times = files.times;
-            @leaderboard = Leaderboard(mapUid);
+            // collect = Collect();
+            // collect.times = files.times;
+            auto racingData = RacingData();
+            racingData.records = files.records;
+            @leaderboard = Leaderboard(mapUid, racingData);
             start();
         }
     }
     void debug_print(){
         print(leaderboard.toString());
-        print(collect.toString());
+        // print(collect.toString());
     }
 }

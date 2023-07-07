@@ -195,9 +195,11 @@ class MapLeaderboardData {
 //Collect.as
 class Leaderboard : Component {
     MapLeaderboardData@ data;
+    RacingData racingData;
 
-    Leaderboard(const string &in mapUid) {
+    Leaderboard(const string &in mapUid, RacingData racingData) {
         @data = MapLeaderboardData(mapUid);
+        this.racingData = racingData;
         super();
     }
 
@@ -230,6 +232,10 @@ class Leaderboard : Component {
             PlayerState::sTMData@ TMData = PlayerState::GetRaceData();
             if(TMData.dEventInfo.FinishRun){
                 print("finish" + TMData.dPlayerInfo.EndTime);
+                auto goals = Goals(this);
+                goals.CalculateObjective();
+                auto pb = TMData.dPlayerInfo.EndTime < data.personalBest.time;
+                racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb));
                 // yield();
                 // data.RefreshPersonalBest();
                 data.UpdatePersonalBest(TMData.dPlayerInfo.EndTime);

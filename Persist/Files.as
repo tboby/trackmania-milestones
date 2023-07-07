@@ -3,7 +3,7 @@ class Files {
     string folder_location = "";
     string map_id = "";
     string json_file = "";
-    array<uint64> times;
+    array<RaceRecord@> records;
     bool loaded = false;
     Json::Value json_obj = Json::Parse('{"times":[]}');
     Files() {}
@@ -24,12 +24,12 @@ class Files {
         loaded = true;
     }
     void read_file_new(const Json::Value &in content) {
-        auto rawTimes = content.Get('times');
-        array<uint64> newTimes;
+        auto rawTimes = content.Get('records');
+        array<RaceRecord@> newTimes;
         for(uint i = 0; i < rawTimes.Length; i++){
-            newTimes.InsertLast(rawTimes[i]);
+            newTimes.InsertLast(RaceRecord(rawTimes[i]));
         }
-        times = newTimes;
+        records = newTimes;
     }
 
     void write_file() {
@@ -38,10 +38,10 @@ class Files {
         }
         auto content = Json::Object();
         auto outTimes = Json::Array();
-        for(uint i = 0; i < times.Length; i++){
-            outTimes.Add(times[i]);
+        for(uint i = 0; i < records.Length; i++){
+            outTimes.Add(records[i].to_json());
         }
-        content["times"] = outTimes;
+        content["records"] = outTimes;
         Json::ToFile(json_file,content);
     }
 

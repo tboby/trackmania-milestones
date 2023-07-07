@@ -176,8 +176,13 @@ void RenderTab(){
 void RenderTarget(){
     UI::BeginTable("Target", 6);
     UI::TableNextRow();
-    auto goals = Goals(mapWatcher.collect, mapWatcher.leaderboard);
+    auto goals = Goals(mapWatcher.leaderboard);
     goals.CalculateObjective();
+    for(uint i = 0; i < 5 && i < mapWatcher.leaderboard.racingData.records.Length; i++){
+        UI::TableNextRow();
+        UI::TableNextColumn();
+        UI::Text(TimeString(mapWatcher.leaderboard.racingData.records[mapWatcher.leaderboard.racingData.records.Length - (i + 1)].time));
+    }
     if(!(goals.target is null)){
         RenderTime(goals.target);
     }

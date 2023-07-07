@@ -1,9 +1,7 @@
 class Goals {
-    Collect@ collect;
     Leaderboard@ leaderboard;
     LeaderboardEntry@ target;
-    Goals(Collect@ collect, Leaderboard@ leaderboard){
-        @this.collect = collect;
+    Goals(Leaderboard@ leaderboard){
         @this.leaderboard = leaderboard;
     }
 
