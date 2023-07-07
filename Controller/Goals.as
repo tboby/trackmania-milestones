@@ -14,7 +14,7 @@ class Goals {
         LeaderboardEntry@ nextTarget = medals[0];
         for(uint i = 1; i< medals.Length; i++){
             auto entry = medals[i];
-            if(entry.time > nextTarget.time && entry.time < pb.time){
+            if(entry.time > nextTarget.time && (entry.time < pb.time || pb.time < 0)){
                 nextTarget = entry;
             }
         }
