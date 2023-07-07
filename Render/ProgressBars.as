@@ -1,9 +1,9 @@
 class ProgressBar
 {
     private float x, y, w, h;
-    private vec4 fillColor, backColor;
+    private vec4 fillColor, backColor, tickColor;
 
-    ProgressBar(float x, float y, float w, float h, const vec4&in fillColor, const vec4&in backColor)
+    ProgressBar(float x, float y, float w, float h, const vec4&in fillColor, const vec4&in backColor, const vec4&in tickColor)
     {
         this.x = x;
         this.y = y;
@@ -11,15 +11,28 @@ class ProgressBar
         this.h = h;
         this.fillColor = fillColor;
         this.backColor = backColor;
+        this.tickColor = tickColor;
     }
 
-    void render(float progress)
+    void render(float progress, array<float>@ times)
     {
         // Create the background bar
         nvg::BeginPath();
         nvg::FillColor(backColor);
         nvg::Rect(x, y, w, h);
         nvg::Fill();
+
+        // Create the ticks
+        for(uint i = 0; i < times.Length; i++)
+        {
+            float tickPosition = times[i] * w;
+
+            nvg::BeginPath();
+            nvg::StrokeColor(tickColor);
+            nvg::MoveTo(vec2(x + tickPosition, y));
+            nvg::LineTo(vec2(x + tickPosition, y + h));
+            nvg::Stroke();
+        }
 
         // Create the progress bar
         nvg::BeginPath();
@@ -29,34 +42,58 @@ class ProgressBar
     }
 }
 
-void RenderProgressBars(ProgressBar@ pb, array<float>@ times, float target, float current)
+// void RenderProgressBar(ProgressBar@ pb, array<float>@ times, float bestTime)
+// {
+//     // Calculate progress based on best time
+//     float progress = bestTime;
+//     pb.render(progress, @times);
+// }
+
+
+
+
+// string ConvertTimeToDisplayFormat(int timeInMs)
+// {
+//     int minutes = timeInMs / (1000 * 60);
+//     int seconds = (timeInMs / 1000) % 60;
+//     int milliseconds = timeInMs % 1000;
+
+//     return format("%02d:%02d.%03d", minutes, seconds, milliseconds);
+// }
+
+array<float> NormalizeTimes(array<int>@ times, int bestTime)
 {
-    for (uint i = 0; i < times.Length; i++)
+    array<float> retTimes;
+    for(uint i = 0; i < times.Length; i++)
     {
-        // Calculate progress based on target and current pb
-        float progress = CalculateProgress(times[i], target, current);
-        pb.render(progress);
+        retTimes.InsertLast(float(times[i]) / float(bestTime));
     }
+    return retTimes;
 }
 
-float CalculateProgress(float time, float target, float current)
+void RenderProgressBar(ProgressBar@ pb, array<int>@ times, int bestTime)
 {
-    // Implement your progress calculation logic here
-    // For example:
-    float progress = (time - current) / (target - current);
-    progress = Math::Clamp(progress, 0.0f, 1.0f); // Ensure progress is between 0 and 1
-    return progress;
+    auto newTimes = NormalizeTimes(@times, bestTime);
+    float progress = 1.0f; // progress is always full when we use bestTime
+
+    pb.render(0.2f, @newTimes);
 }
 
 void RenderBars()
 {
     vec4 fillColor = vec4(0.0f, 0.7f, 0.3f, 1.0f); // Green color
     vec4 backColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); // Dark grey color
-    ProgressBar@ pb = ProgressBar(50.0f, 50.0f, 300.0f, 30.0f, fillColor, backColor);
+    vec4 tickColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); // Red color
+    ProgressBar@ pb = ProgressBar(800.0f, 1000.0f, 200.0f, 30.0f, fillColor, backColor, tickColor);
 
-    array<float>@ times = {1.0f, 1.2f, 0.9f, 1.1f};
-    float target = 1.3f;
-    float current = 1.0f;
+    array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
+    int bestTime = 240000;
 
-    RenderProgressBars(@pb, @times, target, current);
+    RenderProgressBar(@pb, @times, bestTime);
+
+    // Print times in display format
+    // for(uint i = 0; i < times.length(); i++)
+    // {
+    //     print(ConvertTimeToDisplayFormat(times[i]));
+    // }
 }
