@@ -141,6 +141,10 @@ void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<L
 
 void RenderBars()
 {
+    if(mapWatcher.leaderboard.data.playerCount == 0)
+    {
+        return;
+    }
     vec4 fillColor = vec4(0.0f, 0.7f, 0.3f, 1.0f); // Green color
     vec4 backColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); // Dark grey color
     vec4 tickColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); // Red color
@@ -149,46 +153,61 @@ void RenderBars()
     vec2 screenSize = vec2(Draw::GetWidth(), Draw::GetHeight());
     ProgressBar@ pb = ProgressBar(0, screenSize.y - 50.0f, screenSize.x, 40.0f, fillColor, backColor, tickColor, textColor, "Arial");
 
-
-    array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
-    //create four medal entries
-    array<LeaderboardEntry@> medals;
-    for(uint i = 0; i < times.Length; i++)
+    auto medals = mapWatcher.leaderboard.data.medals;
+    auto playerCount = mapWatcher.leaderboard.data.playerCount;
+    array<RaceRecord@> playerTimes = mapWatcher.leaderboard.racingData.records;
+    // For each player time, create a leaderboardentry with the position, time, and name
+    array<LeaderboardEntry@> times;
+    for(uint i = 0; i < playerTimes.Length; i++)
     {
         auto entry = LeaderboardEntry();
-        entry.position = (i + 1) * 100;
-        entry.time = times[i];
-        entry.desc = "Medal " + (i + 1);
-        medals.InsertLast(entry);
+        entry.time = playerTimes[i].time;
+        auto cacheHit = mapWatcher.leaderboard.data.GetTimeEntryFromCache(playerTimes[i].time);
+        if(!(cacheHit is null)){
+            entry.position = cacheHit.position;
+            times.InsertLast(entry);
+        }
     }
+    auto personalBest = mapWatcher.leaderboard.data.personalBest;
+    // array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
+    //create four medal entries
+    // array<LeaderboardEntry@> medals;
+    // for(uint i = 0; i < times.Length; i++)
+    // {
+    //     auto entry = LeaderboardEntry();
+    //     entry.position = (i + 1) * 100;
+    //     entry.time = times[i];
+    //     entry.desc = "Medal " + (i + 1);
+    //     medals.InsertLast(entry);
+    // }
 
     //create four player entries with different times
-    array<LeaderboardEntry@> playerTimes;
-    auto entry = LeaderboardEntry();
-    entry.position = 50;
-    entry.time = 50000;
-    entry.desc = "Player 1";
-    playerTimes.InsertLast(entry);
-    entry = LeaderboardEntry();
-    entry.position = 80;
-    entry.time = 80000;
-    entry.desc = "Player 2";
-    playerTimes.InsertLast(entry);
-    entry = LeaderboardEntry();
-    entry.position = 30;
-    entry.time = 90000;
-    entry.desc = "Player 3";
-    playerTimes.InsertLast(entry);
-    entry = LeaderboardEntry();
-    entry.position = 40;
-    entry.time = 180000;
-    entry.desc = "Player 4";
-    playerTimes.InsertLast(entry);
+    // array<LeaderboardEntry@> playerTimes;
+    // auto entry = LeaderboardEntry();
+    // entry.position = 50;
+    // entry.time = 50000;
+    // entry.desc = "Player 1";
+    // playerTimes.InsertLast(entry);
+    // entry = LeaderboardEntry();
+    // entry.position = 80;
+    // entry.time = 80000;
+    // entry.desc = "Player 2";
+    // playerTimes.InsertLast(entry);
+    // entry = LeaderboardEntry();
+    // entry.position = 30;
+    // entry.time = 90000;
+    // entry.desc = "Player 3";
+    // playerTimes.InsertLast(entry);
+    // entry = LeaderboardEntry();
+    // entry.position = 40;
+    // entry.time = 180000;
+    // entry.desc = "Player 4";
+    // playerTimes.InsertLast(entry);
 
 
-    int bestTime = 90000;
+    // int bestTime = 90000;
 
-    RenderProgressBar(@pb, medals, playerTimes, bestTime, 1000);
+    RenderProgressBar(@pb, medals, times, personalBest.time, playerCount);
 
     // array<string> labels;
     // for(uint i = 0; i < times.Length; i++)

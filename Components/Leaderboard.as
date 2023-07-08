@@ -1,6 +1,7 @@
 class MapLeaderboardData {
     array<LeaderboardEntry@> medals;
     array<LeaderboardEntry@> positionEntries;
+    array<LeaderboardEntry@> timeEntryCache;
     int playerCount;
     LeaderboardEntry personalBest;
     string mapUid;
@@ -14,8 +15,8 @@ class MapLeaderboardData {
     MapLeaderboardData(string mapUid){
         this.mapUid = mapUid;
     }
-    void Initialise(){
-        LoadStaticInfo();
+    void Initialise(RacingData@ racingData){
+        LoadStaticInfo(racingData.records);
         RefreshPersonalBest();
     }
 
@@ -27,6 +28,28 @@ class MapLeaderboardData {
         }
     }
 
+    // Get the leaderboard entry for the given time, caching
+    // the result for future calls.
+    LeaderboardEntry@ GetTimeEntry(int time){
+        for(uint i = 0; i< timeEntryCache.Length; i++){
+            if(timeEntryCache[i].time == time){
+                return timeEntryCache[i];
+            }
+        }
+        auto entry = GetSpecificPositionEntry(this.mapUid, time);
+        timeEntryCache.InsertLast(entry);
+        return entry;
+    }
+
+    // Get the leaderboard entry for the given time, reading from cache only
+    LeaderboardEntry@ GetTimeEntryFromCache(int time){
+        for(uint i = 0; i< timeEntryCache.Length; i++){
+            if(timeEntryCache[i].time == time){
+                return timeEntryCache[i];
+            }
+        }
+        return null;
+    }
     // void UpdatePersonalBest(int newPb){
     //     int maxTries = 10;
     //     int i = 0;
@@ -48,7 +71,7 @@ class MapLeaderboardData {
         LoadTargets();
     }
 
-    void LoadStaticInfo(){
+    void LoadStaticInfo(array<RaceRecord@> records){
         // Declare the response here to access it from the logging part later.
         ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
         // if activated, call the extra leaderboardAPI
@@ -57,6 +80,12 @@ class MapLeaderboardData {
             try
             {
                 @req = ExtraLeaderboardAPI::PrepareRequest(this.mapUid, true);
+                //Add score requests from records
+                for(uint i = 0; i < records.Length; i++){
+                    if(records[i].time > 0){
+                        req.scores.InsertLast(records[i].time);
+                    }
+                }
             }
             catch
             {
@@ -81,6 +110,12 @@ class MapLeaderboardData {
             // if there's a player count, try to extract it and set the player count
             if(resp.playerCount > 0){
                 playerCount = resp.playerCount;
+                if(playerCount % 100000 == 0){
+                    playerCount += 100000;
+                }
+                else if(playerCount % 10000 == 0){
+                    playerCount += 10000;
+                }
             } else {
                 playerCount = -1;
             }
@@ -108,6 +143,16 @@ class MapLeaderboardData {
                 medalEntries[i].percentage = (100 * medalEntries[i].position) / playerCount;
             }
             medals = medalEntries;
+
+            // extract all the time entries into the class position entries
+            array<LeaderboardEntry@> timeEntries;
+            for(uint i = 0; i< resp.positions.Length; i++){
+                if(resp.positions[i].entryType != EnumLeaderboardEntryType::TIME){
+                    continue;
+                }
+                timeEntries.InsertLast(resp.positions[i]);
+            }
+            timeEntryCache = timeEntries;
         }
     }
 
@@ -223,7 +268,7 @@ class Leaderboard : Component {
     // }
 
     void start() override {
-        data.Initialise();
+        data.Initialise(this.racingData);
         Component::start();
     }
 
@@ -238,6 +283,7 @@ class Leaderboard : Component {
                 racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb));
                 // yield();
                 // data.RefreshPersonalBest();
+                data.GetTimeEntry(TMData.dPlayerInfo.EndTime);
                 data.UpdatePersonalBest(TMData.dPlayerInfo.EndTime);
                 print(data.toString());
             }
