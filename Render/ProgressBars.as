@@ -2,13 +2,15 @@ class ProgressBarItem {
     float position;
     vec4 color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     string label;
+    string prettyTime;
     ProgressBarItem(float position){
         this.position = position;
     }
-    ProgressBarItem(float position, string label, vec4 color){
+    ProgressBarItem(float position, string label, vec4 color, string prettyTime){
         this.position = position;
         this.label = label;
         this.color = color;
+        this.prettyTime = prettyTime;
     }
 }
 
@@ -66,7 +68,10 @@ class ProgressBar
             nvg::Stroke();
 
             // Add text labels
-            nvg::Text(x + tickPosition, y - 5, items[i].label);
+            float textWidth = nvg::TextBounds(items[i].label).x;
+            nvg::Text(x + tickPosition - (textWidth / 2.0f), y - 5, items[i].label);
+            float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
+            nvg::Text(x + tickPosition - (prettyTimeWidth / 2.0f), y + h + 15, items[i].prettyTime);
         }
 
 
@@ -105,27 +110,21 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
 
 //A function which takes an array of medal times, an array of player times, and the best time
 //and returns an array of ProgressBarItems
-void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times, int bestTime, int playerCount)
+void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times, LeaderboardEntry@ personalBest, int playerCount)
 {
     //medal color
     vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
     array<ProgressBarItem@> items;
     for(uint i = 0; i < medals.Length; i++)
     {
-        items.InsertLast(ProgressBarItem(float(playerCount - medals[i].position) / float(playerCount), medals[i].desc, gold));
+        items.InsertLast(ProgressBarItem(float(playerCount - medals[i].position) / float(playerCount), medals[i].desc, gold, TimeString(medals[i].time)));
     }
+    vec4 yellow = vec4(1.0f, 0.8f, 0.0f, 1.0f);
+    items.InsertLast(ProgressBarItem(float(playerCount - personalBest.position) / float(playerCount), "PB", yellow, TimeString(personalBest.time)));
+
     for(uint i = 0; i < times.Length; i++)
     {
-        // if time is bestTime, set colour as yellow
-        if(times[i].time == bestTime)
-        {
-            vec4 yellow = vec4(1.0f, 0.8f, 0.0f, 1.0f);
-            items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount), TimeString(times[i].time), yellow));
-        }
-        else
-        {
-            items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount)));
-        }
+        items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount)));
     }
     pb.render(1.0f, items);
 }
@@ -148,10 +147,10 @@ void RenderBars()
     vec4 fillColor = vec4(0.0f, 0.7f, 0.3f, 1.0f); // Green color
     vec4 backColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); // Dark grey color
     vec4 tickColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); // Red color
-    vec4 textColor = vec4(1.0f, 1.0f, 1.0f, 1.0f); // White color
+    vec4 textColor = vec4(0.0f, 0.0f, 0.0f, 1.0f); // Black color
     // Calculate trackmania openplanet screen width from api
     vec2 screenSize = vec2(Draw::GetWidth(), Draw::GetHeight());
-    ProgressBar@ pb = ProgressBar(0, screenSize.y - 50.0f, screenSize.x, 40.0f, fillColor, backColor, tickColor, textColor, "Arial");
+    ProgressBar@ pb = ProgressBar(0, screenSize.y - 60.0f, screenSize.x, 40.0f, fillColor, backColor, tickColor, textColor, "Arial");
 
     auto medals = mapWatcher.leaderboard.data.medals;
     auto playerCount = mapWatcher.leaderboard.data.playerCount;
@@ -207,7 +206,7 @@ void RenderBars()
 
     // int bestTime = 90000;
 
-    RenderProgressBar(@pb, medals, times, personalBest.time, playerCount);
+    RenderProgressBar(@pb, medals, times, personalBest, playerCount);
 
     // array<string> labels;
     // for(uint i = 0; i < times.Length; i++)
