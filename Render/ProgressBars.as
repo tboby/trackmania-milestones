@@ -119,8 +119,82 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
     return retTimes;
 }
 
+class FixedPointPositioning {
+    private array<int> times;
+    private array<float> points;
+    FixedPointPositioning(array<int>@ times, array<float>@ points) {
+        this.times = times;
+        this.points = points;
+    }
+    // Interpolate between the fixed points either side
+    float getPosition(float time) {
+        print(TimeString(time));
+        for (uint i = 0; i < times.Length; i++) {
+            if (time > times[i]) {
+                if (i == 0) {
+                    return points[0];
+                } else {
+                    float t = float(times[i - 1] - time) / float(times[i - 1] - times[i]);
+                    return points[i - 1] + t * (points[i] - points[i - 1]);
+                }
+            }
+        }
+        return points[points.Length - 1];
+    }
+}
+// 100, 50, 10
+// 0,   1,  2
+// 60 -> i = 1
+//
+
+
 // A function like RenderProgressBar which uses the four medal values as fixed points and scales the rest of the times evenly
 // between them
+void RenderProgressBarTwo(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
+     LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord,
+     array<LeaderboardEntry@> percentageEntries)
+{
+    array<int> fixedTimes;
+    array<float> fixedPoints;
+    for(uint i = 0; i < medals.Length; i++)
+    {
+        fixedTimes.InsertLast(medals[i].time);
+        fixedPoints.InsertLast(float(playerCount - medals[i].position) / float(playerCount));
+    }
+    fixedTimes.InsertLast(worldRecord.time);
+    fixedPoints.InsertLast(1.0f);
+
+    auto interpolation = FixedPointPositioning(fixedTimes, fixedPoints);
+    //medal color
+    vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
+    // percentage blue color
+    vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    array<ProgressBarItem@> items;
+    for(uint i = 0; i < medals.Length; i++)
+    {
+        items.InsertLast(ProgressBarItem(float(playerCount - medals[i].position) / float(playerCount), medals[i].desc, gold, TimeString(medals[i].time)));
+    }
+    vec4 yellow = vec4(1.0f, 0.8f, 0.0f, 1.0f);
+    items.InsertLast(ProgressBarItem(interpolation.getPosition(personalBest.time), "PB", yellow, TimeString(personalBest.time)));
+    items.InsertLast(ProgressBarItem(1.0f, "WR", yellow, TimeString(worldRecord.time)));
+    for(uint i = 0; i < times.Length; i++)
+    {
+        items.InsertLast(ProgressBarItem(interpolation.getPosition(times[i].time)));
+    }
+    for(uint i = 0; i < percentageEntries.Length; i++)
+    {
+        auto item = ProgressBarItem(interpolation.getPosition(percentageEntries[i].time), percentageEntries[i].desc, blue, TimeString(percentageEntries[i].time));
+
+        if((percentageEntries[i].percentage) % 10 == 0.0f){
+            item.height = 0.75f;
+        }
+        else {
+            item.height = 0.5f;
+        }
+        items.InsertLast(item);
+    }
+    pb.render(interpolation.getPosition(personalBest.time), items);
+}
 
 
 
@@ -197,7 +271,7 @@ void RenderBars()
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
 
 
-    RenderProgressBar(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries);
+    RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries);
 
 
 }
