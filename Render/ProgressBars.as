@@ -70,7 +70,13 @@ class ProgressBar
 
             // Add text labels
             float textWidth = nvg::TextBounds(items[i].label).x;
-            auto labelPos = vec2(x + tickPosition - (textWidth / 2.0f), y - 5);
+            float labelStartPos = x + tickPosition - (textWidth / 2.0f);
+            float labelEndPos = labelStartPos + textWidth;
+            // Check and adjust positions so labels don't cross the progress bar boundaries
+            if (labelStartPos < x) labelStartPos = x;
+            if (labelEndPos > x + w) labelStartPos = x + w - textWidth;
+            auto labelPos = vec2(labelStartPos, y - 5);
+
             float nCopies = 32; // this does not seem to be expensive
             float sw = 14.0f * 0.11;
             nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -83,7 +89,11 @@ class ProgressBar
             nvg::Text(labelPos, items[i].label);
 
             float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
-            auto prettyTimePos = vec2(x + tickPosition - (prettyTimeWidth / 2.0f), y + h + 15);
+            float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
+            float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
+            if (prettyTimeStartPos < x) prettyTimeStartPos = x;
+            if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
+            auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
             nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
             for (float j = 0; j < nCopies; j++) {
                 float angle = TAU * float(j) / nCopies;
@@ -130,7 +140,7 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
 
 //A function which takes an array of medal times, an array of player times, and the best time
 //and returns an array of ProgressBarItems
-void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times, LeaderboardEntry@ personalBest, int playerCount)
+void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times, LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord)
 {
     //medal color
     vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
@@ -141,7 +151,7 @@ void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<L
     }
     vec4 yellow = vec4(1.0f, 0.8f, 0.0f, 1.0f);
     items.InsertLast(ProgressBarItem(float(playerCount - personalBest.position) / float(playerCount), "PB", yellow, TimeString(personalBest.time)));
-
+    items.InsertLast(ProgressBarItem(1.0f, "WR", yellow, TimeString(worldRecord.time)));
     for(uint i = 0; i < times.Length; i++)
     {
         items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount)));
@@ -188,6 +198,7 @@ void RenderBars()
         }
     }
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
+    auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
     // array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
     //create four medal entries
     // array<LeaderboardEntry@> medals;
@@ -226,7 +237,7 @@ void RenderBars()
 
     // int bestTime = 90000;
 
-    RenderProgressBar(@pb, medals, times, personalBest, playerCount);
+    RenderProgressBar(@pb, medals, times, personalBest, playerCount, worldRecord);
 
     // array<string> labels;
     // for(uint i = 0; i < times.Length; i++)

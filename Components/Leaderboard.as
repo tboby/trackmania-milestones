@@ -4,6 +4,7 @@ class MapLeaderboardData {
     array<LeaderboardEntry@> timeEntryCache;
     int playerCount;
     LeaderboardEntry personalBest;
+    LeaderboardEntry worldRecord;
     string mapUid;
     float personalBestPercentage { get {
         if(personalBest.time < 0){
@@ -86,6 +87,7 @@ class MapLeaderboardData {
                         req.scores.InsertLast(records[i].time);
                     }
                 }
+                req.positions.InsertLast(1);
             }
             catch
             {
@@ -153,6 +155,15 @@ class MapLeaderboardData {
                 timeEntries.InsertLast(resp.positions[i]);
             }
             timeEntryCache = timeEntries;
+
+            // Add world record to field
+            for(uint i = 0; i< resp.positions.Length; i++){
+                if(resp.positions[i].position != 1){
+                    continue;
+                }
+                worldRecord = resp.positions[i];
+            }
+
         }
     }
 
