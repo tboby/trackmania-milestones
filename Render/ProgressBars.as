@@ -109,25 +109,6 @@ class ProgressBar
     }
 }
 
-// void RenderProgressBar(ProgressBar@ pb, array<float>@ times, float bestTime)
-// {
-//     // Calculate progress based on best time
-//     float progress = bestTime;
-//     pb.render(progress, @times);
-// }
-
-
-
-
-// string ConvertTimeToDisplayFormat(int timeInMs)
-// {
-//     int minutes = timeInMs / (1000 * 60);
-//     int seconds = (timeInMs / 1000) % 60;
-//     int milliseconds = timeInMs % 1000;
-
-//     return format("%02d:%02d.%03d", minutes, seconds, milliseconds);
-// }
-
 array<float> NormalizeTimes(array<int>@ times, int bestTime)
 {
     array<float> retTimes;
@@ -137,6 +118,10 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
     }
     return retTimes;
 }
+
+// A function like RenderProgressBar which uses the four medal values as fixed points and scales the rest of the times evenly
+// between them
+
 
 
 //A function which takes an array of medal times, an array of player times, and the best time
@@ -177,14 +162,6 @@ void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<L
 }
 
 
-// void RenderProgressBar(ProgressBar@ pb, array<int>@ times, int bestTime, array<string>@ labels)
-// {
-//     auto newTimes = NormalizeTimes(@times, bestTime);
-//     float progress = 1.0f; // progress is always full when we use bestTime
-
-//     pb.render(0.2f, @newTimes, labels);
-// }
-
 void RenderBars()
 {
     if(mapWatcher.leaderboard.data.playerCount == 0)
@@ -218,57 +195,9 @@ void RenderBars()
     auto percentageEntries = mapWatcher.leaderboard.data.percentageEntries;
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
-    // array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
-    //create four medal entries
-    // array<LeaderboardEntry@> medals;
-    // for(uint i = 0; i < times.Length; i++)
-    // {
-    //     auto entry = LeaderboardEntry();
-    //     entry.position = (i + 1) * 100;
-    //     entry.time = times[i];
-    //     entry.desc = "Medal " + (i + 1);
-    //     medals.InsertLast(entry);
-    // }
 
-    //create four player entries with different times
-    // array<LeaderboardEntry@> playerTimes;
-    // auto entry = LeaderboardEntry();
-    // entry.position = 50;
-    // entry.time = 50000;
-    // entry.desc = "Player 1";
-    // playerTimes.InsertLast(entry);
-    // entry = LeaderboardEntry();
-    // entry.position = 80;
-    // entry.time = 80000;
-    // entry.desc = "Player 2";
-    // playerTimes.InsertLast(entry);
-    // entry = LeaderboardEntry();
-    // entry.position = 30;
-    // entry.time = 90000;
-    // entry.desc = "Player 3";
-    // playerTimes.InsertLast(entry);
-    // entry = LeaderboardEntry();
-    // entry.position = 40;
-    // entry.time = 180000;
-    // entry.desc = "Player 4";
-    // playerTimes.InsertLast(entry);
-
-
-    // int bestTime = 90000;
 
     RenderProgressBar(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries);
 
-    // array<string> labels;
-    // for(uint i = 0; i < times.Length; i++)
-    // {
-    //     labels.InsertLast(TimeString(times[i]));
-    // }
 
-    // RenderProgressBar(@pb, @times, bestTime, @labels);
-
-    // Print times in display format
-    // for(uint i = 0; i < times.length(); i++)
-    // {
-    //     print(ConvertTimeToDisplayFormat(times[i]));
-    // }
 }
