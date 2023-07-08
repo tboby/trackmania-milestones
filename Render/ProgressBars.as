@@ -19,6 +19,7 @@ class ProgressBar
     private float x, y, w, h;
     private vec4 fillColor, backColor, tickColor, textColor;
     private int font;
+    private float TAU = 6.283185307179586;
 
     ProgressBar(float x, float y, float w, float h, const vec4&in fillColor, const vec4&in backColor, const vec4&in tickColor, const vec4&in textColor, const string&in fontName)
     {
@@ -69,9 +70,28 @@ class ProgressBar
 
             // Add text labels
             float textWidth = nvg::TextBounds(items[i].label).x;
-            nvg::Text(x + tickPosition - (textWidth / 2.0f), y - 5, items[i].label);
+            auto labelPos = vec2(x + tickPosition - (textWidth / 2.0f), y - 5);
+            float nCopies = 32; // this does not seem to be expensive
+            float sw = 14.0f * 0.11;
+            nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            for (float j = 0; j < nCopies; j++) {
+                float angle = TAU * float(j) / nCopies;
+                vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+                nvg::Text(labelPos + offs, items[i].label);
+            }
+            nvg::FillColor(textColor);
+            nvg::Text(labelPos, items[i].label);
+
             float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
-            nvg::Text(x + tickPosition - (prettyTimeWidth / 2.0f), y + h + 15, items[i].prettyTime);
+            auto prettyTimePos = vec2(x + tickPosition - (prettyTimeWidth / 2.0f), y + h + 15);
+            nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            for (float j = 0; j < nCopies; j++) {
+                float angle = TAU * float(j) / nCopies;
+                vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+                nvg::Text(prettyTimePos + offs, items[i].prettyTime);
+            }
+            nvg::FillColor(textColor);
+            nvg::Text(prettyTimePos, items[i].prettyTime);
         }
 
 
@@ -126,7 +146,7 @@ void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<L
     {
         items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount)));
     }
-    pb.render(1.0f, items);
+    pb.render(float(playerCount - personalBest.position) / float(playerCount), items);
 }
 
 
@@ -147,7 +167,7 @@ void RenderBars()
     vec4 fillColor = vec4(0.0f, 0.7f, 0.3f, 1.0f); // Green color
     vec4 backColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); // Dark grey color
     vec4 tickColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); // Red color
-    vec4 textColor = vec4(0.0f, 0.0f, 0.0f, 1.0f); // Black color
+    vec4 textColor = vec4(1.0f, 1.0f, 1.0f, 1.0f); // White color
     // Calculate trackmania openplanet screen width from api
     vec2 screenSize = vec2(Draw::GetWidth(), Draw::GetHeight());
     ProgressBar@ pb = ProgressBar(0, screenSize.y - 60.0f, screenSize.x, 40.0f, fillColor, backColor, tickColor, textColor, "Arial");
