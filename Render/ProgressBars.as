@@ -3,6 +3,7 @@ class ProgressBarItem {
     vec4 color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     string label;
     string prettyTime;
+    float height = 1.0f;
     ProgressBarItem(float position){
         this.position = position;
     }
@@ -64,7 +65,7 @@ class ProgressBar
             float tickPosition = items[i].position * w;
             nvg::BeginPath();
             nvg::StrokeColor(items[i].color);
-            nvg::MoveTo(vec2(x + tickPosition, y));
+            nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - items[i].height))));
             nvg::LineTo(vec2(x + tickPosition, y + h));
             nvg::Stroke();
 
@@ -140,10 +141,14 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
 
 //A function which takes an array of medal times, an array of player times, and the best time
 //and returns an array of ProgressBarItems
-void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times, LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord)
+void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
+     LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord,
+     array<LeaderboardEntry@> percentageEntries)
 {
     //medal color
     vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
+    // percentage blue color
+    vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
     array<ProgressBarItem@> items;
     for(uint i = 0; i < medals.Length; i++)
     {
@@ -155,6 +160,18 @@ void RenderProgressBar(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<L
     for(uint i = 0; i < times.Length; i++)
     {
         items.InsertLast(ProgressBarItem(float(playerCount - times[i].position) / float(playerCount)));
+    }
+    for(uint i = 0; i < percentageEntries.Length; i++)
+    {
+        auto item = ProgressBarItem(float(playerCount - percentageEntries[i].position) / float(playerCount), percentageEntries[i].desc, blue, TimeString(percentageEntries[i].time));
+
+        if((percentageEntries[i].percentage) % 10 == 0.0f){
+            item.height = 0.75f;
+        }
+        else {
+            item.height = 0.5f;
+        }
+        items.InsertLast(item);
     }
     pb.render(float(playerCount - personalBest.position) / float(playerCount), items);
 }
@@ -197,6 +214,8 @@ void RenderBars()
             times.InsertLast(entry);
         }
     }
+
+    auto percentageEntries = mapWatcher.leaderboard.data.percentageEntries;
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
     // array<int>@ times = {60000, 120000, 240000, 180000}; // times in milliseconds
@@ -237,7 +256,7 @@ void RenderBars()
 
     // int bestTime = 90000;
 
-    RenderProgressBar(@pb, medals, times, personalBest, playerCount, worldRecord);
+    RenderProgressBar(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries);
 
     // array<string> labels;
     // for(uint i = 0; i < times.Length; i++)

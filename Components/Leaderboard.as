@@ -1,6 +1,7 @@
 class MapLeaderboardData {
     array<LeaderboardEntry@> medals;
     array<LeaderboardEntry@> positionEntries;
+    array<LeaderboardEntry@> percentageEntries;
     array<LeaderboardEntry@> timeEntryCache;
     int playerCount;
     LeaderboardEntry personalBest;
@@ -18,6 +19,7 @@ class MapLeaderboardData {
     }
     void Initialise(RacingData@ racingData){
         LoadStaticInfo(racingData.records);
+        LoadKeyPositions();
         RefreshPersonalBest();
     }
 
@@ -165,6 +167,58 @@ class MapLeaderboardData {
             }
 
         }
+    }
+
+    // Get the time at every 5% from 0 to 100
+    void LoadKeyPositions(){
+        array<int> positions;
+        for(uint i = 0; i< 21; i++){
+            positions.InsertLast(Math::Round(playerCount * (i * 5 / 100.0f)));
+        }
+
+        // Declare the response here to access it from the logging part later.
+        ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
+        // if activated, call the extra leaderboardAPI
+        if(ExtraLeaderboardAPI::Active && !ExtraLeaderboardAPI::failedAPI){
+            ExtraLeaderboardAPI::ExtraLeaderboardAPIRequest@ req = null;
+            try
+            {
+                @req = ExtraLeaderboardAPI::PrepareRequestPositions(this.mapUid, positions);
+            }
+            catch
+            {
+                // we can assume that something went wrong while trying to prepare the request. We abort the refresh and try again later
+                // also warn in the log that something went wrong
+                warn("Something went wrong while trying to prepare the request. Aborting the refresh and trying again later");
+                warn("Error message : " + getExceptionInfo());
+                failedRefresh = true;
+                return;
+            }
+
+            ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ resp = ExtraLeaderboardAPI::GetExtraLeaderboard(req);
+
+            // We extract the times from the response if there's any
+            if(resp is null){
+                warn("response from ExtraLeaderboardAPI is null or empty");
+                return;
+            }
+
+            respLog = resp;
+
+            // extract the medal entries
+            array<LeaderboardEntry@> newPositionEntries;
+            for(uint i = 0; i< resp.positions.Length; i++){
+                if(resp.positions[i].entryType != EnumLeaderboardEntryType::POSITION){
+                    continue;
+                }
+                resp.positions[i].percentage = Math::Round((100.0f * resp.positions[i].position) / playerCount);
+                newPositionEntries.InsertLast(resp.positions[i]);
+            }
+            // sort the medal entries then add the description to them
+            newPositionEntries.SortAsc();
+            percentageEntries = newPositionEntries;
+        }
+
     }
 
     void LoadTargets(){
