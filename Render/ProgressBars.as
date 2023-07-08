@@ -128,7 +128,7 @@ class FixedPointPositioning {
     }
     // Interpolate between the fixed points either side
     float getPosition(float time) {
-        print(TimeString(time));
+        // print(TimeString(time));
         for (uint i = 0; i < times.Length; i++) {
             if (time > times[i]) {
                 if (i == 0) {
@@ -152,7 +152,7 @@ class FixedPointPositioning {
 // between them
 void RenderProgressBarTwo(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
      LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord,
-     array<LeaderboardEntry@> percentageEntries)
+     array<LeaderboardEntry@> percentageEntries, LeaderboardEntry@ noRespawnBest)
 {
     array<int> fixedTimes;
     array<float> fixedPoints;
@@ -175,7 +175,13 @@ void RenderProgressBarTwo(ProgressBar@ pb, array<LeaderboardEntry@> medals, arra
         items.InsertLast(ProgressBarItem(float(playerCount - medals[i].position) / float(playerCount), medals[i].desc, gold, TimeString(medals[i].time)));
     }
     vec4 yellow = vec4(1.0f, 0.8f, 0.0f, 1.0f);
-    items.InsertLast(ProgressBarItem(interpolation.getPosition(personalBest.time), "PB", yellow, TimeString(personalBest.time)));
+    if(personalBest.time > 0){
+        items.InsertLast(ProgressBarItem(interpolation.getPosition(personalBest.time), "PB", yellow, TimeString(personalBest.time)));
+    }
+    vec4 red = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    if(noRespawnBest.time > 0 && noRespawnBest.time != personalBest.time){
+        items.InsertLast(ProgressBarItem(interpolation.getPosition(noRespawnBest.time), "Cope", red, TimeString(noRespawnBest.time)));
+    }
     items.InsertLast(ProgressBarItem(1.0f, "WR", yellow, TimeString(worldRecord.time)));
     for(uint i = 0; i < times.Length; i++)
     {
@@ -269,9 +275,10 @@ void RenderBars()
     auto percentageEntries = mapWatcher.leaderboard.data.percentageEntries;
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
+    auto noRespawnBest = mapWatcher.leaderboard.data.noRespawnBest;
 
 
-    RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries);
+    RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries, noRespawnBest);
 
 
 }

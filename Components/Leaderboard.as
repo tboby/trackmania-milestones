@@ -5,6 +5,7 @@ class MapLeaderboardData {
     array<LeaderboardEntry@> timeEntryCache;
     int playerCount;
     LeaderboardEntry personalBest;
+    LeaderboardEntry noRespawnBest;
     LeaderboardEntry worldRecord;
     string mapUid;
     float personalBestPercentage { get {
@@ -72,6 +73,13 @@ class MapLeaderboardData {
         this.personalBest.position = positionEntry.position;
         this.personalBest.time = positionEntry.time;
         LoadTargets();
+    }
+
+
+     void UpdateNoRespawnBest(int newPb){
+        auto positionEntry = GetSpecificPositionEntry(this.mapUid, newPb);
+        this.noRespawnBest.position = positionEntry.position;
+        this.noRespawnBest.time = positionEntry.time;
     }
 
     void LoadStaticInfo(array<RaceRecord@> records){
@@ -346,10 +354,15 @@ class Leaderboard : Component {
                 goals.CalculateObjective();
                 auto pb = TMData.dPlayerInfo.EndTime < data.personalBest.time;
                 racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb));
+                auto mlf = MLFeed::GetRaceData_V4();
+            	auto plf = mlf.GetPlayer_V4(MLFeed::LocalPlayersName);
+
                 // yield();
                 // data.RefreshPersonalBest();
-                data.GetTimeEntry(TMData.dPlayerInfo.EndTime);
-                data.UpdatePersonalBest(TMData.dPlayerInfo.EndTime);
+                data.GetTimeEntry(plf.LastCpTime);
+                data.UpdatePersonalBest(plf.LastCpTime);
+                data.GetTimeEntry(plf.LastTheoreticalCpTime);
+                data.UpdateNoRespawnBest(plf.LastTheoreticalCpTime);
                 print(data.toString());
             }
             else if (TMData.dEventInfo.EndRun){

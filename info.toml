@@ -5,5 +5,5 @@ category = "Testing"
 version  = "0.0.1"
 
 [script]
-dependencies = [ "NadeoServices", "VehicleState", "PlayerState" ]
+dependencies = [ "NadeoServices", "VehicleState", "PlayerState", "MLHook", "MLFeedRaceData" ]
 optional_dependencies = [ "ChampionMedals", "SBVilleCampaignChallenges" ]
