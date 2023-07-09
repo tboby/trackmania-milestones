@@ -360,7 +360,7 @@ class Leaderboard : Component {
                 auto goals = Goals(this);
                 goals.CalculateObjective();
                 auto pb = TMData.dPlayerInfo.EndTime < data.personalBest.time;
-                racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb));
+                racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb, Time::Stamp));
                 auto mlf = MLFeed::GetRaceData_V4();
             	auto plf = mlf.GetPlayer_V4(MLFeed::LocalPlayersName);
 

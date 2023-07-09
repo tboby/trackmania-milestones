@@ -2,22 +2,28 @@ class RaceRecord {
     uint64 time;
     uint64 target;
     bool pb;
-    RaceRecord(uint64 time, uint64 target, bool pb){
+    int64 timestamp;
+    RaceRecord(uint64 time, uint64 target, bool pb, int64 timestamp){
         this.time = time;
         this.target = target;
         this.pb = pb;
+        this.timestamp = timestamp;
     }
     Json::Value@ to_json(){
         auto result = Json::Object();
         result["time"] = time;
         result["target"] = target;
         result["pb"] = pb;
+        result["timestamp"] = timestamp;
         return result;
     }
     RaceRecord(Json::Value json){
         this.time = json.Get("time");
         this.target = json.Get("target");
         this.pb = json.Get("pb");
+        if(json.HasKey("timestamp")){
+            this.timestamp = json.Get("timestamp");
+        }
     }
 }
 
