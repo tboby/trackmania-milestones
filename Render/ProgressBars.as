@@ -43,6 +43,8 @@ class MedalProgressBarInputItem : ProgressBarInputItem {
             return ProgressBarItem(position, label, vec4(0.75f, 0.75f, 0.75f, 1.0f), prettyTime);
         } else if(this.label == "Bronze"){
             return ProgressBarItem(position, label, vec4(0.8f, 0.5f, 0.2f, 1.0f), prettyTime);
+        } else if(this.label == "AT"){
+            return ProgressBarItem(position, label, vec4(0.0f, 1.0f, 0.0f, 1.0f), prettyTime);
         } else {
             return ProgressBarItem(position, label, vec4(1.0f, 1.0f, 1.0f, 1.0f), prettyTime);
         }
@@ -457,7 +459,9 @@ void RenderBars()
     array<const ProgressBarInputItem@> inputItems;
     inputItems.InsertLast(PBProgressBarInputItem(personalBest));
     inputItems.InsertLast(SpecialProgressBarInputItem(worldRecord.time, "WR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
-    inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest.time, "Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+    if(noRespawnBest.time > 0 && personalBest.time != noRespawnBest.time){
+        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest.time, "Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+    }
     inputItems.InsertLast(SpecialProgressBarInputItem(average, "Avg", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     for(uint i = 0; i < medals.Length; i++)
     {
