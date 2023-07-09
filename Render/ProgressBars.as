@@ -163,6 +163,13 @@ void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals
     }
     fixedTimes.InsertLast(worldRecord.time);
     fixedPoints.InsertLast(1.0f);
+    fixedTimes.SortDesc();
+    fixedPoints.SortAsc();
+    //print times and points
+    // for(uint i = 0; i < fixedTimes.Length; i++)
+    // {
+        // print("time: " + TimeString(fixedTimes[i]) + " point: " + fixedPoints[i]);
+    // }
 
     auto interpolation = FixedPointPositioning(fixedTimes, fixedPoints);
     //medal color
