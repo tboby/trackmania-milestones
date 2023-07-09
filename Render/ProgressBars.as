@@ -150,7 +150,7 @@ class FixedPointPositioning {
 
 // A function like RenderProgressBar which uses the four medal values as fixed points and scales the rest of the times evenly
 // between them
-void RenderProgressBarTwo(ProgressBar@ pb, array<LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
+void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
      LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord,
      array<LeaderboardEntry@> percentageEntries, LeaderboardEntry@ noRespawnBest)
 {

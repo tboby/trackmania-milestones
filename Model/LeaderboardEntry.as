@@ -19,7 +19,7 @@ class LeaderboardEntry{
 
     float percentage = 0.0f;
 
-    string percentageDisplay { get {
+    string percentageDisplay { get const {
             if(percentage % 1 == 0) {
                 return Text::Format("%.0f%%", percentage);
             }
@@ -58,7 +58,17 @@ class LeaderboardEntry{
         return time != -1 && position != -1 && entryType != EnumLeaderboardEntryType::UNKNOWN;
     }
 
-    string toString(){
+    string toString() const {
         return desc + ": " + TimeString(time) + ", #" + position + ", " + percentageDisplay;
+    }
+
+    LeaderboardEntry clone(){
+        LeaderboardEntry entry;
+        entry.time = time;
+        entry.position = position;
+        entry.desc = desc;
+        entry.entryType = entryType;
+        entry.percentage = percentage;
+        return entry;
     }
 }

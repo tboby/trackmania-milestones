@@ -1,5 +1,5 @@
 class MapLeaderboardData {
-    array<LeaderboardEntry@> medals;
+    array<const LeaderboardEntry@> medals;
     array<LeaderboardEntry@> positionEntries;
     array<LeaderboardEntry@> percentageEntries;
     array<LeaderboardEntry@> timeEntryCache;
@@ -154,7 +154,13 @@ class MapLeaderboardData {
                 medalEntries[i].desc = medalDesc[i];
                 medalEntries[i].percentage = (100 * medalEntries[i].position) / playerCount;
             }
-            medals = medalEntries;
+            // clone medals
+            array<const LeaderboardEntry@> newMedals;
+            for(uint i = 0; i< medalEntries.Length; i++){
+                newMedals.InsertLast(medalEntries[i].clone());
+            }
+
+            medals = newMedals;
 
             // extract all the time entries into the class position entries
             array<LeaderboardEntry@> timeEntries;
@@ -183,6 +189,7 @@ class MapLeaderboardData {
         for(uint i = 0; i< 21; i++){
             positions.InsertLast(Math::Round(playerCount * (i * 5 / 100.0f)));
         }
+
 
         // Declare the response here to access it from the logging part later.
         ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
@@ -240,13 +247,13 @@ class MapLeaderboardData {
             print(position.position);
             positions.InsertLast(Math::Round(playerCount * (percentages[i] / 100.0f)));
         }
-        print("10k" + GetSpecificTimeEntry(this.mapUid, 10000).toString());
-        print("20k" + GetSpecificTimeEntry(this.mapUid, 20000).toString());
-        print("30k" + GetSpecificTimeEntry(this.mapUid, 30000).toString());
-        print("40k" + GetSpecificTimeEntry(this.mapUid, 40000).toString());
-        print("" + GetSpecificPositionEntry(this.mapUid, 32000).toString());
-        print("" + GetSpecificPositionEntry(this.mapUid, 33000).toString());
-        print("" + GetSpecificPositionEntry(this.mapUid, 34000).toString());
+        // print("10k" + GetSpecificTimeEntry(this.mapUid, 10000).toString());
+        // print("20k" + GetSpecificTimeEntry(this.mapUid, 20000).toString());
+        // print("30k" + GetSpecificTimeEntry(this.mapUid, 30000).toString());
+        // print("40k" + GetSpecificTimeEntry(this.mapUid, 40000).toString());
+        // print("" + GetSpecificPositionEntry(this.mapUid, 32000).toString());
+        // print("" + GetSpecificPositionEntry(this.mapUid, 33000).toString());
+        // print("" + GetSpecificPositionEntry(this.mapUid, 34000).toString());
 
 
 
