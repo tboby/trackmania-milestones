@@ -152,7 +152,7 @@ class FixedPointPositioning {
 // between them
 void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals, array<LeaderboardEntry@> times,
      LeaderboardEntry@ personalBest, int playerCount, LeaderboardEntry@ worldRecord,
-     array<LeaderboardEntry@> percentageEntries, LeaderboardEntry@ noRespawnBest)
+     array<LeaderboardEntry@> percentageEntries, LeaderboardEntry@ noRespawnBest, int average)
 {
     array<int> fixedTimes;
     array<float> fixedPoints;
@@ -188,6 +188,9 @@ void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals
     vec4 red = vec4(1.0f, 0.0f, 0.0f, 1.0f);
     if(noRespawnBest.time > 0 && noRespawnBest.time != personalBest.time){
         items.InsertLast(ProgressBarItem(interpolation.getPosition(noRespawnBest.time), "Cope", red, TimeString(noRespawnBest.time)));
+    }
+    if(average > 0){
+        items.InsertLast(ProgressBarItem(interpolation.getPosition(average), "Avg", red, TimeString(average)));
     }
     items.InsertLast(ProgressBarItem(1.0f, "WR", yellow, TimeString(worldRecord.time)));
     for(uint i = 0; i < times.Length; i++)
@@ -284,8 +287,11 @@ void RenderBars()
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
     auto noRespawnBest = mapWatcher.leaderboard.data.noRespawnBest;
 
+    PlayerStats@ stats = PlayerStats(mapWatcher.leaderboard);
+    auto average = stats.Average(5);
 
-    RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries, noRespawnBest);
+
+    RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries, noRespawnBest, average);
 
 
 }
