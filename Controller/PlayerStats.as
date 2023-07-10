@@ -73,4 +73,17 @@ class PlayerStats{
         return -1;
     }
 
+    int BestNoRespawnTime {
+        get {
+            auto records = leaderboard.racingData.records;
+            int bestTime = -1;
+            for (int i = 0; i < records.Length; i++){
+                if(records[i].noRespawnTime < bestTime || bestTime == -1){
+                    bestTime = records[i].noRespawnTime;
+                }
+            }
+            return bestTime;
+        }
+    }
+
 }

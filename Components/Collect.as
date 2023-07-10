@@ -1,13 +1,15 @@
 class RaceRecord {
     uint64 time;
+    int64 noRespawnTime = -1;
     uint64 target;
     bool pb;
     int64 timestamp;
-    RaceRecord(uint64 time, uint64 target, bool pb, int64 timestamp){
+    RaceRecord(uint64 time, uint64 target, bool pb, int64 timestamp, int64 noRespawnTime){
         this.time = time;
         this.target = target;
         this.pb = pb;
         this.timestamp = timestamp;
+        this.noRespawnTime = noRespawnTime;
     }
     Json::Value@ to_json(){
         auto result = Json::Object();
@@ -15,6 +17,7 @@ class RaceRecord {
         result["target"] = target;
         result["pb"] = pb;
         result["timestamp"] = timestamp;
+        result["noRespawnTime"] = noRespawnTime;
         return result;
     }
     RaceRecord(Json::Value json){
@@ -23,6 +26,12 @@ class RaceRecord {
         this.pb = json.Get("pb");
         if(json.HasKey("timestamp")){
             this.timestamp = json.Get("timestamp");
+        }
+        if(json.HasKey("noRespawnTime")){
+            this.noRespawnTime = json.Get("noRespawnTime");
+            if(this.noRespawnTime == 0){
+                this.noRespawnTime = -1;
+            }
         }
     }
 }

@@ -451,16 +451,21 @@ void RenderBars()
     auto percentageEntries = mapWatcher.leaderboard.data.percentageEntries;
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
-    auto noRespawnBest = mapWatcher.leaderboard.data.noRespawnBest;
+    auto noRespawnLast = mapWatcher.leaderboard.data.noRespawnLast;
 
     PlayerStats@ stats = PlayerStats(mapWatcher.leaderboard);
     auto average = stats.Average(5);
+    auto noRespawnBest = stats.BestNoRespawnTime;
 
     array<const ProgressBarInputItem@> inputItems;
     inputItems.InsertLast(PBProgressBarInputItem(personalBest));
     inputItems.InsertLast(SpecialProgressBarInputItem(worldRecord.time, "WR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
-    if(noRespawnBest.time > 0 && personalBest.time != noRespawnBest.time){
-        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest.time, "Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+
+    if(noRespawnBest > 0 && personalBest.time != noRespawnBest){
+        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest, "Best Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+    }
+    if(noRespawnLast.time > 0 && personalBest.time != noRespawnLast.time && noRespawnBest != noRespawnLast.time){
+        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnLast.time, "Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     }
     inputItems.InsertLast(SpecialProgressBarInputItem(average, "Avg", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     for(uint i = 0; i < medals.Length; i++)

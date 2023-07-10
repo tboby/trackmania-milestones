@@ -5,7 +5,7 @@ class MapLeaderboardData {
     array<LeaderboardEntry@> timeEntryCache;
     int playerCount;
     LeaderboardEntry personalBest;
-    LeaderboardEntry noRespawnBest;
+    LeaderboardEntry noRespawnLast;
     LeaderboardEntry worldRecord;
     string mapUid;
     float personalBestPercentage { get {
@@ -76,10 +76,13 @@ class MapLeaderboardData {
     }
 
 
-     void UpdateNoRespawnBest(int newPb){
-        auto positionEntry = GetSpecificPositionEntry(this.mapUid, newPb);
-        this.noRespawnBest.position = positionEntry.position;
-        this.noRespawnBest.time = positionEntry.time;
+     void UpdateNoRespawnLast(int newNoRespawn){
+        auto positionEntry = GetSpecificPositionEntry(this.mapUid, newNoRespawn);
+        this.noRespawnLast.position = positionEntry.position;
+        this.noRespawnLast.time = positionEntry.time;
+        print("asd");
+        print(this.noRespawnLast.time);
+        print(newNoRespawn);
     }
 
     void LoadStaticInfo(array<RaceRecord@> records){
@@ -360,16 +363,16 @@ class Leaderboard : Component {
                 auto goals = Goals(this);
                 goals.CalculateObjective();
                 auto pb = TMData.dPlayerInfo.EndTime < data.personalBest.time;
-                racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb, Time::Stamp));
                 auto mlf = MLFeed::GetRaceData_V4();
             	auto plf = mlf.GetPlayer_V4(MLFeed::LocalPlayersName);
+                racingData.records.InsertLast(RaceRecord(TMData.dPlayerInfo.EndTime, goals.target.time, pb, Time::Stamp, plf.LastTheoreticalCpTime));
 
                 // yield();
                 // data.RefreshPersonalBest();
                 data.GetTimeEntry(plf.LastCpTime);
                 data.UpdatePersonalBest(plf.LastCpTime);
                 data.GetTimeEntry(plf.LastTheoreticalCpTime);
-                data.UpdateNoRespawnBest(plf.LastTheoreticalCpTime);
+                data.UpdateNoRespawnLast(plf.LastTheoreticalCpTime);
                 print(data.toString());
             }
             else if (TMData.dEventInfo.EndRun){
