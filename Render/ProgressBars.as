@@ -181,10 +181,15 @@ class ProgressBar
             if (labelStartPos < x) labelStartPos = x;
             if (labelEndPos > x + w) labelStartPos = x + w - textWidth;
             auto labelPos = vec2(labelStartPos, y - 5);
+            auto labelMidPos = vec2(labelStartPos + (textWidth / 2.0f), y - 5);
 
             float nCopies = 32; // this does not seem to be expensive
             float sw = 14.0f * 0.11;
             nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            // rotate to make the text angled but starting at midpoint of the text
+            nvg::Translate(labelMidPos.x, labelPos.y);
+            nvg::Rotate(-TAU / 8.0f);
+            nvg::Translate(-labelMidPos.x, -labelPos.y);
             for (float j = 0; j < nCopies; j++) {
                 float angle = TAU * float(j) / nCopies;
                 vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
@@ -192,6 +197,10 @@ class ProgressBar
             }
             nvg::FillColor(textColor);
             nvg::Text(labelPos, items[i].label);
+            //Then restore
+            nvg::Translate(labelMidPos.x, labelPos.y);
+            nvg::Rotate(TAU / 8.0f);
+            nvg::Translate(-labelMidPos.x, -labelPos.y);
 
             float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
             float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
