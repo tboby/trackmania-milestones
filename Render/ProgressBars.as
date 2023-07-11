@@ -173,34 +173,29 @@ class ProgressBar
             nvg::LineTo(vec2(x + tickPosition, y + h));
             nvg::Stroke();
 
-            // Add text labels
+                  // Add text labels
             float textWidth = nvg::TextBounds(items[i].label).x;
-            float labelStartPos = x + tickPosition - (textWidth / 2.0f);
+            float labelStartPos = x + tickPosition;
             float labelEndPos = labelStartPos + textWidth;
-            // Check and adjust positions so labels don't cross the progress bar boundaries
-            if (labelStartPos < x) labelStartPos = x;
-            if (labelEndPos > x + w) labelStartPos = x + w - textWidth;
-            auto labelPos = vec2(labelStartPos, y - 5);
-            auto labelMidPos = vec2(labelStartPos + (textWidth / 2.0f), y - 5);
 
-            float nCopies = 32; // this does not seem to be expensive
-            float sw = 14.0f * 0.11;
+            // transform the origin to the label's starting point
+            nvg::Save();  // save the current state
+            nvg::Translate(labelStartPos, y - 5);  // new origin at the label's start
+            nvg::Rotate(-TAU / 8.0f);  // rotate by -45 degrees counterclockwise
+            auto nCopies = 12;
+            auto sw = 14.0f * 0.11f;
+            // now we can render the text as if it started at the origin
             nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
-            // rotate to make the text angled but starting at midpoint of the text
-            nvg::Translate(labelMidPos.x, labelPos.y);
-            nvg::Rotate(-TAU / 8.0f);
-            nvg::Translate(-labelMidPos.x, -labelPos.y);
             for (float j = 0; j < nCopies; j++) {
                 float angle = TAU * float(j) / nCopies;
                 vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
-                nvg::Text(labelPos + offs, items[i].label);
+                nvg::Text(offs, items[i].label);  // changed the position to offs
             }
             nvg::FillColor(textColor);
-            nvg::Text(labelPos, items[i].label);
-            //Then restore
-            nvg::Translate(labelMidPos.x, labelPos.y);
-            nvg::Rotate(TAU / 8.0f);
-            nvg::Translate(-labelMidPos.x, -labelPos.y);
+            nvg::Text(vec2(0, 0), items[i].label);  // render text at the origin
+
+            // restore the transformations
+            nvg::Restore();  // restore the saved state, effectively undoing the translations and rotations
 
             float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
             float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
