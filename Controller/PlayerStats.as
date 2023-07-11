@@ -86,4 +86,14 @@ class PlayerStats{
         }
     }
 
+    int LastSessionRun {
+        get {
+            auto records = SessionRecords;
+            if(records.Length > 0){
+                return records[records.Length - 1].time;
+            }
+            return -1;
+        }
+    }
+
 }

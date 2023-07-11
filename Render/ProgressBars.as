@@ -479,27 +479,41 @@ void RenderBars()
     PlayerStats@ stats = PlayerStats(mapWatcher.leaderboard);
     auto average = stats.Average(5);
     auto noRespawnBest = stats.BestNoRespawnTime;
+    auto lastSessionTime = stats.LastSessionRun;
 
     array<const ProgressBarInputItem@> inputItems;
-    inputItems.InsertLast(PBProgressBarInputItem(personalBest));
+    if(personalBest.time > 0){
+        inputItems.InsertLast(PBProgressBarInputItem(personalBest));
+    }
+
+
+
     inputItems.InsertLast(SpecialProgressBarInputItem(worldRecord.time, "WR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
 
     if(noRespawnBest > 0 && personalBest.time != noRespawnBest){
-        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest, "Best Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest, "Best NR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     }
     if(noRespawnLast.time > 0 && personalBest.time != noRespawnLast.time && noRespawnBest != noRespawnLast.time){
-        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnLast.time, "Cope", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+        inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnLast.time, "Last NR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     }
-    inputItems.InsertLast(SpecialProgressBarInputItem(average, "Avg", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+    if(average > 0){
+        inputItems.InsertLast(SpecialProgressBarInputItem(average, "Avg", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+    }
     for(uint i = 0; i < medals.Length; i++)
     {
         inputItems.InsertLast(MedalProgressBarInputItem(medals[i]));
     }
     auto currentSession = stats.SessionRecords;
     auto oldRecords = stats.OldRecords;
+
     for(uint i = 0; i < currentSession.Length; i++)
     {
-        inputItems.InsertLast(PreviousRecordProgressBarInputItem(currentSession[i].time, currentSession[i].pb, true));
+        if(i == currentSession.Length - 1){
+            inputItems.InsertLast(SpecialProgressBarInputItem(currentSession[i].time, "Last", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
+        }
+        else {
+            inputItems.InsertLast(PreviousRecordProgressBarInputItem(currentSession[i].time, currentSession[i].pb, true));
+        }
     }
     for(uint i = 0; i < oldRecords.Length; i++)
     {
