@@ -316,6 +316,18 @@ void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals
     pb.render(interpolation.getPosition(personalBest.time), items);
 }
 
+// Take an array of floats between 0 and 1 which indicate incresing thresholds and rescale the second till the end so that they cover the range 0.2 to 1 with the same
+// relative spacing, so that the second threshold is at 0.2
+array<float> RescaleThresholds(array<float>@ thresholds)
+{
+    array<float> ret;
+    ret.InsertLast(0.0f);
+    for(uint i = 1; i < thresholds.Length; i++)
+    {
+        ret.InsertLast(0.1f + (thresholds[i] - thresholds[1]) * 0.9f / (thresholds[thresholds.Length - 1] - thresholds[1]));
+    }
+    return ret;
+}
 
 // A function like RenderProgressBarTwo which takes ProgressBarInputItems instead
 void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputItem@> inputs, int playerCount, array<const LeaderboardEntry@> medals, int worldRecord, int personalBest){
@@ -326,10 +338,21 @@ void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputIt
         fixedTimes.InsertLast(medals[i].time);
         fixedPoints.InsertLast(float(playerCount - medals[i].position) / float(playerCount));
     }
+    // Get max time from inputs
+    int maxTime = 0;
+    for(uint i = 0; i < inputs.Length; i++)
+    {
+        if(inputs[i].time > maxTime){
+            maxTime = inputs[i].time;
+        }
+    }
+    fixedTimes.InsertAt(0, maxTime);
+    fixedPoints.InsertAt(0, 0.0f);
     fixedTimes.InsertLast(worldRecord);
     fixedPoints.InsertLast(1.0f);
     fixedTimes.SortDesc();
     fixedPoints.SortAsc();
+    fixedPoints = RescaleThresholds(fixedPoints);
 
     auto interpolation = FixedPointPositioning(fixedTimes, fixedPoints);
     array<const ProgressBarItem@> items;
