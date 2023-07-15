@@ -7,6 +7,7 @@ class MapLeaderboardData {
     LeaderboardEntry personalBest;
     LeaderboardEntry noRespawnLast;
     LeaderboardEntry worldRecord;
+    LeaderboardEntry lastPlaceEstimate;
     string mapUid;
     float personalBestPercentage { get {
         if(personalBest.time < 0){
@@ -91,6 +92,7 @@ class MapLeaderboardData {
                     }
                 }
                 req.positions.InsertLast(1);
+                req.positions.InsertLast(100000000);
             }
             catch
             {
@@ -115,12 +117,12 @@ class MapLeaderboardData {
             // if there's a player count, try to extract it and set the player count
             if(resp.playerCount > 0){
                 playerCount = resp.playerCount;
-                if(playerCount % 100000 == 0){
-                    playerCount += 100000;
-                }
-                else if(playerCount % 10000 == 0){
-                    playerCount += 10000;
-                }
+                // if(playerCount % 100000 == 0){
+                    // playerCount += 100000;
+                // }
+                // else if(playerCount % 10000 == 0){
+                    // playerCount += 10000;
+                // }
             } else {
                 playerCount = -1;
             }
@@ -164,6 +166,14 @@ class MapLeaderboardData {
                 timeEntries.InsertLast(resp.positions[i]);
             }
             timeEntryCache = timeEntries;
+
+            // Add the last place to the field
+            for(uint i = 0; i< resp.positions.Length; i++){
+                if(resp.positions[i].position != playerCount){
+                    continue;
+                }
+                lastPlaceEstimate = resp.positions[i];
+            }
 
             // Add world record to field
             for(uint i = 0; i< resp.positions.Length; i++){

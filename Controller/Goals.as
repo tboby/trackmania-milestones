@@ -11,7 +11,8 @@ class Goals {
             DiscoveryFirstRun(playerStats),
             DiscoveryNoRespawn(playerStats),
             Warmup(),
-            Consistency()
+            Consistency(),
+            DefaultMission()
         };
     }
 
@@ -192,6 +193,21 @@ class Consistency : IMission {
     }
     string GetDescription(){
         return "Get your median time within 5% of your PB";
+    }
+}
+
+class DefaultMission : IMission {
+    bool IsEligible(PlayerStats@ playerStats){
+        return true;
+    }
+    bool IsComplete(PlayerStats@ playerStats){
+        return false;
+    }
+    string GetTitle(){
+        return "Default Mission";
+    }
+    string GetDescription(){
+        return "Default Mission";
     }
 }
 

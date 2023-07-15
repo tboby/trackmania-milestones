@@ -226,11 +226,23 @@ array<float> NormalizeTimes(array<int>@ times, int bestTime)
 }
 
 class FixedPointPositioning {
-    private array<int> times;
-    private array<float> points;
+    private array<int>@ times;
+    private array<float>@ points;
     FixedPointPositioning(array<int>@ times, array<float>@ points) {
         this.times = times;
         this.points = points;
+    }
+    FixedPointPositioning(array<ScalingPoint@> scalingPoints) {
+        scalingPoints.SortAsc();
+        @this.times = array<int>(scalingPoints.Length);
+        @this.points = array<float>(scalingPoints.Length);
+        // print("x");
+        for (uint i = 0; i < scalingPoints.Length; i++) {
+            // print("time: " + scalingPoints[i].time + " pos: " + scalingPoints[i].position);
+
+            this.times[i] = scalingPoints[i].time;
+            this.points[i] = scalingPoints[i].position;
+        }
     }
     // Interpolate between the fixed points either side
     float getPosition(float time) {
@@ -320,43 +332,149 @@ void RenderProgressBarTwo(ProgressBar@ pb, array<const LeaderboardEntry@> medals
 
 // Take an array of floats between 0 and 1 which indicate incresing thresholds and rescale the second till the end so that they cover the range 0.2 to 1 with the same
 // relative spacing, so that the second threshold is at 0.2
-array<float> RescaleThresholds(array<float>@ thresholds)
+array<float> RescaleThresholds(array<float>@ thresholds, float pivot)
 {
     array<float> ret;
     ret.InsertLast(0.0f);
     for(uint i = 1; i < thresholds.Length; i++)
     {
-        ret.InsertLast(0.1f + (thresholds[i] - thresholds[1]) * 0.9f / (thresholds[thresholds.Length - 1] - thresholds[1]));
+        ret.InsertLast(pivot + (thresholds[i] - thresholds[1]) * (1.0f - pivot) / (thresholds[thresholds.Length - 1] - thresholds[1]));
     }
     return ret;
 }
 
-// A function like RenderProgressBarTwo which takes ProgressBarInputItems instead
-void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputItem@> inputs, int playerCount, array<const LeaderboardEntry@> medals, int worldRecord, int personalBest){
-    array<int> fixedTimes;
-    array<float> fixedPoints;
+// Take an array of scaling points, along with a min and max value and rescale the  points so that they cover that range
+// E.g. If we hae positions of 0.6, 0.8, 1, and we are given a min of 0.5 and a max of 1.0, we will return 0.5, 0.75, 1.0
+array<float> RescalePoints(array<ScalingPoint@>@ points, float min, float max)
+{
+    array<float> ret;
+    for(uint i = 0; i < points.Length; i++)
+    {
+        ret.InsertLast(min + points[i].position * (max - min));
+    }
+    return ret;
+}
+
+// Evenly space the ScalingPoints between the min and max
+array<float> EvenlySpacePoints(array<ScalingPoint@>@ points, float min, float max)
+{
+    array<float> ret;
+    for(uint i = 0; i < points.Length; i++)
+    {
+        // print("i: " + i + " time: " + points[i].time + " position: " + points[i].position);
+        ret.InsertLast(min + ((max - min) * float(i) / float(points.Length - 1)));
+    }
+    return ret;
+}
+
+
+
+
+class ScalingPoint {
+    float time;
+    float position;
+    ScalingPoint(float time, float position)
+    {
+        this.time = time;
+        this.position = position;
+    }
+    int opCmp(ScalingPoint@ other){
+        if(other.position > position)
+            return -1;
+        else if(other.position == position){
+            return 0;
+        }
+        return 1;
+    }
+}
+
+FixedPointPositioning CreateScaling(array<const LeaderboardEntry@> medals, int playerCount, int worldRecordTime, int slowestTime, float indeterinatePivot)
+{
+    array<ScalingPoint@> indeterminatePoints;
+    array<ScalingPoint@> fixedPoints;
+    array<float> thresholds;
     for(uint i = 0; i < medals.Length; i++)
     {
-        fixedTimes.InsertLast(medals[i].time);
-        fixedPoints.InsertLast(float(playerCount - medals[i].position) / float(playerCount));
-    }
-    // Get max time from inputs
-    int maxTime = 0;
-    for(uint i = 0; i < inputs.Length; i++)
-    {
-        if(inputs[i].time > maxTime){
-            maxTime = inputs[i].time;
+        if(medals[i].position == playerCount && playerCount % 10000 == 0)
+        {
+            indeterminatePoints.InsertLast(ScalingPoint(medals[i].time, 1.0f));
+        }
+        else
+        {
+            fixedPoints.InsertLast(ScalingPoint(medals[i].time, float(playerCount - medals[i].position) / float(playerCount)));
         }
     }
-    fixedTimes.InsertAt(0, maxTime);
-    fixedPoints.InsertAt(0, 0.0f);
-    fixedTimes.InsertLast(worldRecord);
-    fixedPoints.InsertLast(1.0f);
-    fixedTimes.SortDesc();
-    fixedPoints.SortAsc();
-    fixedPoints = RescaleThresholds(fixedPoints);
+    fixedPoints.InsertLast(ScalingPoint(worldRecordTime, 1.0f));
+    // If no indeterminate, add the slowest tie as a fixed point at the beginning
+    if(indeterminatePoints.Length == 0){
+        fixedPoints.InsertAt(0, ScalingPoint(slowestTime, 0.0f));
+        return FixedPointPositioning(fixedPoints);
+    }
+    // If any indeterminate, add the slowest time as a fixed point at the beginning, as long as it is slower than any time already in there
 
-    auto interpolation = FixedPointPositioning(fixedTimes, fixedPoints);
+    indeterminatePoints.Reverse();
+    if(indeterminatePoints[0].time < slowestTime)
+    {
+        indeterminatePoints.InsertAt(0, ScalingPoint(slowestTime, 0.0f));
+    }
+    else {
+        // Add the slowest time by adding  difference between the first and last
+        indeterminatePoints.InsertAt(0, ScalingPoint(indeterminatePoints[0].time + (indeterminatePoints[0].time - indeterminatePoints[indeterminatePoints.Length - 1].time) / 2.0f, 0.0f));
+
+    }
+    // Then rescale both sets of points around the pivot value, so that the last indeterminate point is at the pivot
+    float pivot = indeterinatePivot;
+    thresholds = EvenlySpacePoints(indeterminatePoints, 0.0f, pivot);
+    for(uint i = 0; i < indeterminatePoints.Length; i++)
+    {
+        // print("indeterminatePoints[i].position = " + indeterminatePoints[i].position + " thresholds[i] = " + thresholds[i]);
+        // print("indeterminatePoints[i].time = " + indeterminatePoints[i].time);
+        indeterminatePoints[i].position = thresholds[i];
+    }
+    thresholds = RescalePoints(fixedPoints, pivot, 1.0f);
+    for(uint i = 0; i < fixedPoints.Length; i++)
+    {
+        fixedPoints[i].position = thresholds[i];
+    }
+    // Then combine the two sets of points
+    for(uint i = 0; i < indeterminatePoints.Length; i++)
+    {
+        fixedPoints.InsertLast(indeterminatePoints[i]);
+    }
+
+    return FixedPointPositioning(fixedPoints);
+}
+
+
+// A function like RenderProgressBarTwo which takes ProgressBarInputItems instead
+void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputItem@> inputs, int playerCount, array<const LeaderboardEntry@> medals, int worldRecord, int personalBest, int lastPlaceEstimate){
+
+    // array<int> fixedTimes;
+    // array<float> fixedPoints;
+    // for(uint i = 0; i < medals.Length; i++)
+    // {
+    //     fixedTimes.InsertLast(medals[i].time);
+    //     // print(playerCount - medals[i].position);
+    //     fixedPoints.InsertLast(float(playerCount - medals[i].position) / float(playerCount));
+    // }
+    // // Get max time from inputs
+    // int maxTime = 0;
+    // for(uint i = 0; i < inputs.Length; i++)
+    // {
+    //     if(inputs[i].time > maxTime){
+    //         maxTime = inputs[i].time;
+    //     }
+    // }
+    // fixedTimes.InsertAt(0, maxTime);
+    // fixedPoints.InsertAt(0, 0.0f);
+    // fixedTimes.InsertLast(worldRecord);
+    // fixedPoints.InsertLast(1.0f);
+    // fixedTimes.SortDesc();
+    // fixedPoints.SortAsc();
+    // fixedPoints = RescaleThresholds(fixedPoints);
+
+    // auto interpolation = FixedPointPositioning(fixedTimes, fixedPoints);
+    auto interpolation = CreateScaling(medals, playerCount, worldRecord, lastPlaceEstimate, 0.2f);
     array<const ProgressBarItem@> items;
 
     for(uint i = 0; i < inputs.Length; i++)
@@ -476,6 +594,7 @@ void RenderBars()
     auto percentageEntries = mapWatcher.leaderboard.data.percentageEntries;
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
+    auto lastPlaceEstimate = mapWatcher.leaderboard.data.lastPlaceEstimate;
 
     PlayerStats@ stats = PlayerStats(mapWatcher.leaderboard);
     auto average = stats.Average(5);
@@ -522,7 +641,7 @@ void RenderBars()
         inputItems.InsertLast(PreviousRecordProgressBarInputItem(oldRecords[i].time, oldRecords[i].pb, false));
     }
 
-    RenderProgressBarFromInputs(@pb, inputItems, playerCount, medals, worldRecord.time, personalBest.time);
+    RenderProgressBarFromInputs(@pb, inputItems, playerCount, medals, worldRecord.time, personalBest.time, lastPlaceEstimate.time);
 
     // RenderProgressBarTwo(@pb, medals, times, personalBest, playerCount, worldRecord, percentageEntries, noRespawnBest, average);
 
