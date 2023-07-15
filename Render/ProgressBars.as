@@ -401,7 +401,7 @@ void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputIt
     //     }
     //     items.InsertLast(item);
     // }
-    pb.render(interpolation.getPosition(personalBest), items);
+    pb.render(personalBest < 0 ? 0 : interpolation.getPosition(personalBest), items);
 
 }
 

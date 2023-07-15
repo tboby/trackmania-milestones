@@ -108,4 +108,11 @@ class PlayerStats{
         }
     }
 
+    int PersonalBest {
+        get {
+            return this.leaderboard.data.personalBest.time;
+
+        }
+    }
+
 }

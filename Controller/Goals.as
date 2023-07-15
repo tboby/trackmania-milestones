@@ -51,8 +51,28 @@ class Goals {
     }
 }
 
+interface IMission {
+    bool IsComplete(PlayerStats@ playerStats);
+    
+}
+
+class DiscoveryFirstRun : IMission {
+    bool IsComplete(PlayerStats@ playerStats){
+        return playerStats.PersonalBest > 0;
+    }
+}
+
+class DiscoveryNoRespawn : IMission {
+    bool IsComplete(PlayerStats@ playerStats){
+        return playerStats.PersonalBest > 0 && playerStats.PersonalBest == playerStats.BestNoRespawnTime;
+    }
+}
+
+
 
 enum MissionType {
+    DiscoveryFirstRun,
+    DiscoveryNoRespawn,
     Warmup,
     Consistency,
     Medal
