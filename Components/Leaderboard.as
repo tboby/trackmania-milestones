@@ -361,6 +361,7 @@ class Leaderboard : Component {
                 // data.RefreshPersonalBest();
                 data.GetTimeEntry(plf.LastCpTime);
                 data.UpdatePersonalBest(plf.LastCpTime);
+                mapWatcher.goals.CheckMission();
                 print(data.toString());
             }
             else if (TMData.dEventInfo.EndRun){

@@ -2,6 +2,7 @@ class MapWatcher {
     string mapUid = "";
     // Collect@ collect = Collect();
     Leaderboard@ leaderboard;
+    Goals@ goals;
     Files files;
     MapWatcher()  {
         // collect.destroy();
@@ -35,6 +36,8 @@ class MapWatcher {
     void start() {
         // collect.start();
         leaderboard.start();
+        @goals = Goals(leaderboard);
+        goals.GetNextMission();
     }
 
     void save() {

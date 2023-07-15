@@ -115,4 +115,10 @@ class PlayerStats{
         }
     }
 
+    // A bool that indicates if the player has played this map before and we don't have records for it
+    bool PlayedBeforePlugin {
+        get {
+            return this.leaderboard.data.personalBest.time != -1 && this.leaderboard.racingData.records.Length == 0;
+        }
+    }
 }

@@ -206,19 +206,23 @@ void RenderTab(){
 void RenderTarget(){
     UI::BeginTable("Target", 6);
     UI::TableNextRow();
+    auto goals = mapWatcher.goals;
     auto playerStats = PlayerStats(mapWatcher.leaderboard);
-    auto goals = Goals(mapWatcher.leaderboard);
-    goals.CalculateObjective();
+    // auto goals = Goals(mapWatcher.leaderboard);
+    // goals.CalculateObjective();
     for(uint i = 0; i < 5 && i < mapWatcher.leaderboard.racingData.records.Length; i++){
         UI::TableNextRow();
         UI::TableNextColumn();
         UI::Text(TimeString(mapWatcher.leaderboard.racingData.records[mapWatcher.leaderboard.racingData.records.Length - (i + 1)].time));
     }
-    if(!(goals.target is null)){
-        RenderTime(goals.target);
-    }
+    // if(!(goals.target is null)){
+        // RenderTime(goals.target);
+    // }
     UI::EndTable();
-    UI::Text(goals.GetNextMission() + "");
+    if((goals !is null)){
+        UI::Text(goals.mission.GetTitle());
+        UI::Text(goals.mission.GetDescription());
+    }
     UI::Text(playerStats.Average(5) + "");
     RenderBars();
 }
