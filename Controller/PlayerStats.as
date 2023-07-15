@@ -96,4 +96,14 @@ class PlayerStats{
         }
     }
 
+    int LastSessionNoRespawnTime {
+        get {
+            auto records = SessionRecords;
+            if(records.Length > 0){
+                return records[records.Length - 1].noRespawnTime;
+            }
+            return -1;
+        }
+    }
+
 }
