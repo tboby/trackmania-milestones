@@ -75,16 +75,6 @@ class MapLeaderboardData {
         LoadTargets();
     }
 
-
-     void UpdateNoRespawnLast(int newNoRespawn){
-        auto positionEntry = GetSpecificPositionEntry(this.mapUid, newNoRespawn);
-        this.noRespawnLast.position = positionEntry.position;
-        this.noRespawnLast.time = positionEntry.time;
-        print("asd");
-        print(this.noRespawnLast.time);
-        print(newNoRespawn);
-    }
-
     void LoadStaticInfo(array<RaceRecord@> records){
         // Declare the response here to access it from the logging part later.
         ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse@ respLog = ExtraLeaderboardAPI::ExtraLeaderboardAPIResponse();
@@ -371,8 +361,6 @@ class Leaderboard : Component {
                 // data.RefreshPersonalBest();
                 data.GetTimeEntry(plf.LastCpTime);
                 data.UpdatePersonalBest(plf.LastCpTime);
-                data.GetTimeEntry(plf.LastTheoreticalCpTime);
-                data.UpdateNoRespawnLast(plf.LastTheoreticalCpTime);
                 print(data.toString());
             }
             else if (TMData.dEventInfo.EndRun){

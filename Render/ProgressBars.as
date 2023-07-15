@@ -173,10 +173,8 @@ class ProgressBar
             nvg::LineTo(vec2(x + tickPosition, y + h));
             nvg::Stroke();
 
-                  // Add text labels
-            float textWidth = nvg::TextBounds(items[i].label).x;
+            // Add text labels
             float labelStartPos = x + tickPosition;
-            float labelEndPos = labelStartPos + textWidth;
 
             // transform the origin to the label's starting point
             nvg::Save();  // save the current state
