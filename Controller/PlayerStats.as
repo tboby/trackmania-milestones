@@ -20,6 +20,7 @@ class PlayerStats{
                     last = record.timestamp;
                 }
             }
+            records.Reverse();
             return records;
         }
     }
@@ -52,6 +53,7 @@ class PlayerStats{
                     last = record.timestamp;
                 }
             }
+            records.Reverse();
             return records;
 
 

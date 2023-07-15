@@ -176,6 +176,7 @@ void RenderTab(){
 void RenderTarget(){
     UI::BeginTable("Target", 6);
     UI::TableNextRow();
+    auto playerStats = PlayerStats(mapWatcher.leaderboard);
     auto goals = Goals(mapWatcher.leaderboard);
     goals.CalculateObjective();
     for(uint i = 0; i < 5 && i < mapWatcher.leaderboard.racingData.records.Length; i++){
@@ -187,5 +188,7 @@ void RenderTarget(){
         RenderTime(goals.target);
     }
     UI::EndTable();
+    UI::Text(goals.GetNextMission() + "");
+    UI::Text(playerStats.Average(5) + "");
     RenderBars();
 }
