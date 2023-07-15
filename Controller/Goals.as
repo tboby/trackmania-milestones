@@ -10,7 +10,8 @@ class Goals {
         this.possibleMissions = {
             DiscoveryFirstRun(playerStats),
             DiscoveryNoRespawn(playerStats),
-            Warmup()
+            Warmup(),
+            Consistency()
         };
     }
 
@@ -115,10 +116,19 @@ class DiscoveryNoRespawn : IMission {
         @this.playerStats = playerStats;
     }
     bool IsEligible(PlayerStats@ playerStats){
-        return playerStats.PersonalBest > 0 && playerStats.PersonalBest != playerStats.BestNoRespawnTime;
+        return playerStats.PersonalBest > 0 && !IsComplete(playerStats);
     }
     bool IsComplete(PlayerStats@ playerStats){
-        return playerStats.PersonalBest > 0 && playerStats.PersonalBest == playerStats.BestNoRespawnTime;
+        // Check all runs for a no respawn run
+        auto sessionRecords = playerStats.SessionRecords;
+        auto sessionRecordCount = sessionRecords.Length;
+        for(uint i = 0; i < sessionRecordCount; i++){
+            auto record = sessionRecords[i];
+            if(record.time == record.noRespawnTime){
+                return true;
+            }
+        }
+        return false;
     }
     string GetTitle(){
         if(playerStats.PlayedBeforePlugin){
@@ -168,6 +178,23 @@ class Warmup : IMission {
         return "Complete a run within 10% of your PB";
     }
 }
+
+// Consistency - Get your median time within 5% of your PB
+class Consistency : IMission {
+    bool IsEligible(PlayerStats@ playerStats){
+        return !IsComplete(playerStats);
+    }
+    bool IsComplete(PlayerStats@ playerStats){
+        return playerStats.Median(5) < playerStats.PersonalBest * 1.05f;
+    }
+    string GetTitle(){
+        return "Consistency";
+    }
+    string GetDescription(){
+        return "Get your median time within 5% of your PB";
+    }
+}
+
 
 
 

@@ -75,6 +75,21 @@ class PlayerStats{
         return -1;
     }
 
+    int Median(int windowSize){
+        auto records = SessionRecords;
+        int count = 0;
+        array<int> times;
+        for (int i = records.Length - 1; i >= 0 && count < windowSize; i--){
+            times.InsertLast(records[i].time);
+            count++;
+        }
+        if(count > 0){
+            times.SortAsc();
+            return times[times.Length / 2];
+        }
+        return -1;
+    }
+
     int BestNoRespawnTime {
         get {
             auto records = leaderboard.racingData.records;
