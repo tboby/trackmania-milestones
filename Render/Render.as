@@ -11,12 +11,42 @@ void RenderMenu() {
 }
 
 
+int lastRaceTime = -1;
 void Render() {
 
     if(!UserCanUseThePlugin()){
         return;
     }
-    RenderWindows();
+    if(displayMode == EnumDisplayMode::ALWAYS) {
+        RenderWindows();
+    } else if (UI::IsGameUIVisible() && displayMode == EnumDisplayMode::ALWAYS_EXCEPT_IF_HIDDEN_INTERFACE){
+        RenderWindows();
+    }
+
+    if(displayMode == EnumDisplayMode::HIDE_WHEN_DRIVING){
+        auto state = VehicleState::ViewingPlayerState();
+        if(state is null) return;
+        float currentSpeed = state.WorldVel.Length() * 3.6;
+        auto mlf = MLFeed::GetRaceData_V4();
+        auto plf = mlf.GetPlayer_V4(MLFeed::LocalPlayersName);
+
+        if(currentSpeed >= hiddingSpeedSetting) {
+            lastRaceTime = plf.CurrentRaceTime;
+        }
+        else if(plf.CurrentRaceTime < lastRaceTime || lastRaceTime == -1 || plf.CurrentRaceTime > lastRaceTime + 500 ) {
+            lastRaceTime = -1;
+            RenderWindows();
+        }
+    }
+}
+void RenderInterface(){
+    if(!UserCanUseThePlugin()){
+        return;
+    }
+
+    if(displayMode == EnumDisplayMode::ONLY_IF_OPENPLANET_MENU_IS_OPEN) {
+        RenderWindows();
+    }
 }
 
 
