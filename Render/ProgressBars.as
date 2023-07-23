@@ -1,4 +1,10 @@
-class ProgressBarItem {
+const float TAU = 6.283185307179586;
+
+interface Drawable{
+    void Draw(float x, float y, float w, float h, vec4 textColor) const;
+}
+
+class ProgressBarItem : Drawable{
     float position;
     vec4 color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     string label;
@@ -13,7 +19,147 @@ class ProgressBarItem {
         this.color = color;
         this.prettyTime = prettyTime;
     }
+
+    void Draw(float x, float y, float w, float h, vec4 textColor) const override {
+        float tickPosition = position * w;
+        nvg::BeginPath();
+        nvg::StrokeColor(color);
+        nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - height))));
+        nvg::LineTo(vec2(x + tickPosition, y + h));
+        nvg::Stroke();
+
+        // Add text labels
+        float labelStartPos = x + tickPosition;
+
+        // transform the origin to the label's starting point
+        nvg::Save();  // save the current state
+        nvg::Translate(labelStartPos, y - 5);  // new origin at the label's start
+        nvg::Rotate(-TAU / 8.0f);  // rotate by -45 degrees counterclockwise
+        auto nCopies = 12;
+        auto sw = 14.0f * 0.11f;
+        // now we can render the text as if it started at the origin
+        nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        for (float j = 0; j < nCopies; j++) {
+            float angle = TAU * float(j) / nCopies;
+            vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+            nvg::Text(offs, label);  // changed the position to offs
+        }
+        nvg::FillColor(textColor);
+        nvg::Text(vec2(0, 0), label);  // render text at the origin
+
+        // restore the transformations
+        nvg::Restore();  // restore the saved state, effectively undoing the translations and rotations
+
+        float prettyTimeWidth = nvg::TextBounds(prettyTime).x;
+        float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
+        float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
+        if (prettyTimeStartPos < x) prettyTimeStartPos = x;
+        if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
+        auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
+        nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        for (float j = 0; j < nCopies; j++) {
+            float angle = TAU * float(j) / nCopies;
+            vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+            nvg::Text(prettyTimePos + offs, prettyTime);
+        }
+        nvg::FillColor(textColor);
+        nvg::Text(prettyTimePos, prettyTime);
+
+    }
 }
+
+// Progress bar item where multiple have the same time and we want to display them as a stack of labels
+class StackedProgressBarItem : ProgressBarItem {
+    array<string> labels;
+    StackedProgressBarItem(float position, array<string> labels, vec4 color, string prettyTime){
+        super(position, "", color, prettyTime);
+        this.labels = labels;
+    }
+
+    void Draw(float x, float y, float w, float h, vec4 textColor) const override {
+        float tickPosition = position * w;
+        nvg::BeginPath();
+        nvg::StrokeColor(color);
+        nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - height))));
+        nvg::LineTo(vec2(x + tickPosition, y + h));
+        nvg::Stroke();
+
+        // Add text labels
+        float labelStartPos = x + tickPosition;
+
+        // transform the origin to the label's starting point
+        nvg::Save();  // save the current state
+        nvg::Translate(labelStartPos, y - 5);  // new origin at the label's start
+        nvg::Rotate(-TAU / 8.0f);  // rotate by -45 degrees counterclockwise
+        auto nCopies = 12;
+        auto sw = 14.0f * 0.11f;
+        // now we can render the text as if it started at the origin
+        nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        for (float j = 0; j < nCopies; j++) {
+            float angle = TAU * float(j) / nCopies;
+            vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+            for(uint i = 0; i < labels.Length; i++){
+                nvg::Text(offs + vec2(0, i * 15), labels[i]);  // changed the position to offs
+            }
+        }
+        nvg::FillColor(textColor);
+        for(uint i = 0; i < labels.Length; i++){
+            nvg::Text(vec2(0, i * 15), labels[i]);  // render text at the origin
+        }
+
+        // restore the transformations
+        nvg::Restore();  // restore the saved state, effectively undoing the translations and rotations
+
+        float prettyTimeWidth = nvg::TextBounds(prettyTime).x;
+        // Rest of function
+        float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
+        float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
+        if (prettyTimeStartPos < x) prettyTimeStartPos = x;
+        if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
+        auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
+        nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        for (float j = 0; j < nCopies; j++) {
+            float angle = TAU * float(j) / nCopies;
+            vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+            nvg::Text(prettyTimePos + offs, prettyTime);
+        }
+        nvg::FillColor(textColor);
+        nvg::Text(prettyTimePos, prettyTime);
+    }
+}
+
+// A function which takes a list of progress bar items and returns a list of progress bar items where any items with positions are within a certain distance of each other
+// are combined into a single item with a stack of labels. The items are already sorted by position and any uncombined items are inserted into the returned array
+array<const ProgressBarItem@> CombineStackedItems(array<const ProgressBarItem@>@ items, float distance){
+    array<const ProgressBarItem@> ret;
+    array<const ProgressBarItem@> uncombinedItems;
+    for(uint i = 0; i < items.Length; i++){
+        if(i == 0){
+            ret.InsertLast(items[i]);
+        } else {
+            if(items[i].position - items[i - 1].position < distance){
+                // Combine the two items
+                array<string> labels;
+                labels.InsertLast(items[i - 1].label);
+                labels.InsertLast(items[i].label);
+                auto newItem = StackedProgressBarItem(items[i].position, labels, items[i].color, items[i].prettyTime);
+                ret.RemoveLast();
+                ret.InsertLast(newItem);
+            } else {
+                ret.InsertLast(items[i]);
+            }
+        }
+    }
+    return ret;
+}
+
+
+
+
+
+
+
+
 
 class ProgressBarInputItem {
     int time;
@@ -124,7 +270,6 @@ class ProgressBar
     private float x, y, w, h;
     private vec4 fillColor, backColor, tickColor, textColor;
     private int font;
-    private float TAU = 6.283185307179586;
 
     ProgressBar(float x, float y, float w, float h, const vec4&in fillColor, const vec4&in backColor, const vec4&in tickColor, const vec4&in textColor, const string&in fontName)
     {
@@ -166,49 +311,7 @@ class ProgressBar
         // Create the ticks
         for(uint i = 0; i < items.Length; i++)
         {
-            float tickPosition = items[i].position * w;
-            nvg::BeginPath();
-            nvg::StrokeColor(items[i].color);
-            nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - items[i].height))));
-            nvg::LineTo(vec2(x + tickPosition, y + h));
-            nvg::Stroke();
-
-            // Add text labels
-            float labelStartPos = x + tickPosition;
-
-            // transform the origin to the label's starting point
-            nvg::Save();  // save the current state
-            nvg::Translate(labelStartPos, y - 5);  // new origin at the label's start
-            nvg::Rotate(-TAU / 8.0f);  // rotate by -45 degrees counterclockwise
-            auto nCopies = 12;
-            auto sw = 14.0f * 0.11f;
-            // now we can render the text as if it started at the origin
-            nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
-            for (float j = 0; j < nCopies; j++) {
-                float angle = TAU * float(j) / nCopies;
-                vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
-                nvg::Text(offs, items[i].label);  // changed the position to offs
-            }
-            nvg::FillColor(textColor);
-            nvg::Text(vec2(0, 0), items[i].label);  // render text at the origin
-
-            // restore the transformations
-            nvg::Restore();  // restore the saved state, effectively undoing the translations and rotations
-
-            float prettyTimeWidth = nvg::TextBounds(items[i].prettyTime).x;
-            float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
-            float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
-            if (prettyTimeStartPos < x) prettyTimeStartPos = x;
-            if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
-            auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
-            nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
-            for (float j = 0; j < nCopies; j++) {
-                float angle = TAU * float(j) / nCopies;
-                vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
-                nvg::Text(prettyTimePos + offs, items[i].prettyTime);
-            }
-            nvg::FillColor(textColor);
-            nvg::Text(prettyTimePos, items[i].prettyTime);
+            items[i].Draw(x, y, w, h, textColor);
         }
 
 
@@ -361,7 +464,7 @@ array<float> EvenlySpacePoints(array<ScalingPoint@>@ points, float min, float ma
     array<float> ret;
     for(uint i = 0; i < points.Length; i++)
     {
-        print("i: " + i + " time: " + points[i].time + " position: " + points[i].position);
+        // print("i: " + i + " time: " + points[i].time + " position: " + points[i].position);
         ret.InsertLast(min + ((max - min) * float(i) / float(points.Length - 1)));
     }
     return ret;
@@ -483,6 +586,7 @@ void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputIt
         inputs[i].toProgressBarItem(1.0f);
         items.InsertLast(inputs[i].toProgressBarItem(interpolation.getPosition(inputs[i].time)));
     }
+    items = CombineStackedItems(items, 0.01f);
     // //medal color
     // vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
     // // percentage blue color
@@ -612,12 +716,12 @@ void RenderBars()
 
     inputItems.InsertLast(SpecialProgressBarInputItem(worldRecord.time, "WR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
 
-    if(noRespawnBest > 0 && personalBest.time != noRespawnBest){
+    // if(noRespawnBest > 0 && personalBest.time != noRespawnBest){
         inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnBest, "Best NR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
-    }
-    if(noRespawnLast > 0 && lastSessionTime != noRespawnLast && noRespawnBest != noRespawnLast){
+    // }
+    // if(noRespawnLast > 0 && lastSessionTime != noRespawnLast && noRespawnBest != noRespawnLast){
         inputItems.InsertLast(SpecialProgressBarInputItem(noRespawnLast, "Last NR", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
-    }
+    // }
     if(average > 0){
         inputItems.InsertLast(SpecialProgressBarInputItem(average, "Avg", vec4(1.0f, 0.8f, 0.0f, 1.0f)));
     }
