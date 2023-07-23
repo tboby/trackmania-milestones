@@ -76,56 +76,71 @@ class StackedProgressBarItem : ProgressBarItem {
         this.labels = labels;
     }
 
-    void Draw(float x, float y, float w, float h, vec4 textColor) const override {
-        float tickPosition = position * w;
+void Draw(float x, float y, float w, float h, vec4 textColor) const override {
+    float tickPosition = position * w;
+    nvg::BeginPath();
+    nvg::StrokeColor(color);
+    nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - height))));
+    nvg::LineTo(vec2(x + tickPosition, y + h));
+    nvg::Stroke();
+
+    // Add text labels
+    auto nCopies = 12;
+    auto sw = 14.0f * 0.11f;
+    float labelStartPos = x + tickPosition;
+
+    float verticalLineLength = 20; // Length of the vertical line
+    float angleLineLength = 10; // Length of the angled line
+
+    for(uint i = 0; i < labels.Length; i++){
+        // Draw vertical line upwards
         nvg::BeginPath();
         nvg::StrokeColor(color);
-        nvg::MoveTo(vec2(x + tickPosition, y + (h * (1 - height))));
-        nvg::LineTo(vec2(x + tickPosition, y + h));
+        nvg::MoveTo(vec2(labelStartPos, y - i * 20));
+        nvg::LineTo(vec2(labelStartPos, y - i * 20 - verticalLineLength));
         nvg::Stroke();
 
-        // Add text labels
-        float labelStartPos = x + tickPosition;
+        // Draw angled line to the label
+        nvg::BeginPath();
+        nvg::MoveTo(vec2(labelStartPos, y - i * 20 - verticalLineLength));
+        nvg::LineTo(vec2(labelStartPos + angleLineLength, y - i * 20 - verticalLineLength - angleLineLength));
+        nvg::Stroke();
 
         // transform the origin to the label's starting point
         nvg::Save();  // save the current state
-        nvg::Translate(labelStartPos, y - 5);  // new origin at the label's start
+        nvg::Translate(labelStartPos + angleLineLength, y - i * 20 - verticalLineLength - angleLineLength);  // new origin at the label's start
         nvg::Rotate(-TAU / 8.0f);  // rotate by -45 degrees counterclockwise
-        auto nCopies = 12;
-        auto sw = 14.0f * 0.11f;
+
         // now we can render the text as if it started at the origin
         nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
         for (float j = 0; j < nCopies; j++) {
             float angle = TAU * float(j) / nCopies;
             vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
-            for(uint i = 0; i < labels.Length; i++){
-                nvg::Text(offs + vec2(0, i * 15), labels[i]);  // changed the position to offs
-            }
+            nvg::Text(offs, labels[i]);
         }
         nvg::FillColor(textColor);
-        for(uint i = 0; i < labels.Length; i++){
-            nvg::Text(vec2(0, i * 15), labels[i]);  // render text at the origin
-        }
+        nvg::Text(vec2(0, 0), labels[i]);  // render rotated text at the origin
 
         // restore the transformations
         nvg::Restore();  // restore the saved state, effectively undoing the translations and rotations
-
-        float prettyTimeWidth = nvg::TextBounds(prettyTime).x;
-        // Rest of function
-        float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
-        float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
-        if (prettyTimeStartPos < x) prettyTimeStartPos = x;
-        if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
-        auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
-        nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        for (float j = 0; j < nCopies; j++) {
-            float angle = TAU * float(j) / nCopies;
-            vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
-            nvg::Text(prettyTimePos + offs, prettyTime);
-        }
-        nvg::FillColor(textColor);
-        nvg::Text(prettyTimePos, prettyTime);
     }
+
+    float prettyTimeWidth = nvg::TextBounds(prettyTime).x;
+    // Rest of function
+    float prettyTimeStartPos = x + tickPosition - (prettyTimeWidth / 2.0f);
+    float prettyTimeEndPos = prettyTimeStartPos + prettyTimeWidth;
+    if (prettyTimeStartPos < x) prettyTimeStartPos = x;
+    if (prettyTimeEndPos > x + w) prettyTimeStartPos = x + w - prettyTimeWidth;
+    auto prettyTimePos = vec2(prettyTimeStartPos, y + h + 15);
+    nvg::FillColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    for (float j = 0; j < nCopies; j++) {
+        float angle = TAU * float(j) / nCopies;
+        vec2 offs = vec2(Math::Sin(angle), Math::Cos(angle)) * sw;
+        nvg::Text(prettyTimePos + offs, prettyTime);
+    }
+    nvg::FillColor(textColor);
+    nvg::Text(prettyTimePos, prettyTime);
+}
 }
 
 // A function which takes a list of progress bar items and returns a list of progress bar items where any items with positions are within a certain distance of each other
