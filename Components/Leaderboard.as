@@ -92,7 +92,6 @@ class MapLeaderboardData {
                     }
                 }
                 req.positions.InsertLast(1);
-                req.positions.InsertLast(100000000);
             }
             catch
             {
@@ -167,16 +166,9 @@ class MapLeaderboardData {
             }
             timeEntryCache = timeEntries;
 
-            // Add the last place to the field
-            for(uint i = 0; i< resp.positions.Length; i++){
-                if(resp.positions[i].position != playerCount){
-                    continue;
-                }
-                lastPlaceEstimate = resp.positions[i];
-            }
-
             // Add world record to field
             for(uint i = 0; i< resp.positions.Length; i++){
+                print("entry type " + resp.positions[i].entryType + " position " + resp.positions[i].position + " time " + resp.positions[i].time);
                 if(resp.positions[i].position != 1){
                     continue;
                 }
@@ -202,6 +194,7 @@ class MapLeaderboardData {
             try
             {
                 @req = ExtraLeaderboardAPI::PrepareRequestPositions(this.mapUid, positions);
+                req.positions.InsertLast(playerCount);
             }
             catch
             {
@@ -225,13 +218,22 @@ class MapLeaderboardData {
 
             // extract the medal entries
             array<LeaderboardEntry@> newPositionEntries;
+            LeaderboardEntry@ newLastPlaceEstimate = LeaderboardEntry();
             for(uint i = 0; i< resp.positions.Length; i++){
+                print("entry type " + resp.positions[i].entryType + " position " + resp.positions[i].position + " time " + resp.positions[i].time);
                 if(resp.positions[i].entryType != EnumLeaderboardEntryType::POSITION){
                     continue;
+                }
+                if(newLastPlaceEstimate.time < 0){
+                    newLastPlaceEstimate = resp.positions[i];
+                }
+                if(resp.positions[i].time > 0 && resp.positions[i].time > newLastPlaceEstimate.time){
+                    newLastPlaceEstimate = resp.positions[i];
                 }
                 resp.positions[i].percentage = Math::Round((100.0f * resp.positions[i].position) / playerCount);
                 newPositionEntries.InsertLast(resp.positions[i]);
             }
+            lastPlaceEstimate = newLastPlaceEstimate;
             // sort the medal entries then add the description to them
             newPositionEntries.SortAsc();
             percentageEntries = newPositionEntries;

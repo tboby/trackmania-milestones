@@ -361,7 +361,7 @@ array<float> EvenlySpacePoints(array<ScalingPoint@>@ points, float min, float ma
     array<float> ret;
     for(uint i = 0; i < points.Length; i++)
     {
-        // print("i: " + i + " time: " + points[i].time + " position: " + points[i].position);
+        print("i: " + i + " time: " + points[i].time + " position: " + points[i].position);
         ret.InsertLast(min + ((max - min) * float(i) / float(points.Length - 1)));
     }
     return ret;
@@ -393,6 +393,7 @@ FixedPointPositioning CreateScaling(array<const LeaderboardEntry@> medals, int p
     array<ScalingPoint@> indeterminatePoints;
     array<ScalingPoint@> fixedPoints;
     array<float> thresholds;
+    // print("playerCount: " + playerCount);
     for(uint i = 0; i < medals.Length; i++)
     {
         if(medals[i].position == playerCount && playerCount % 10000 == 0)
