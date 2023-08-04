@@ -2,6 +2,7 @@ class MapWatcher {
     string mapUid = "";
     // Collect@ collect = Collect();
     Leaderboard@ leaderboard;
+    OnlineStats@ onlineStats;
     Goals@ goals;
     Files files;
     MapWatcher()  {
@@ -36,6 +37,7 @@ class MapWatcher {
     void start() {
         // collect.start();
         leaderboard.start();
+        onlineStats.start();
         @goals = Goals(leaderboard);
         goals.GetNextMission();
     }
@@ -46,6 +48,9 @@ class MapWatcher {
             files.records = leaderboard.racingData.records;
             files.write_file();
             leaderboard.destroy();
+        }
+        if(!(onlineStats is null)){
+            onlineStats.destroy();
         }
     }
 
@@ -60,11 +65,13 @@ class MapWatcher {
             auto racingData = RacingData();
             racingData.records = files.records;
             @leaderboard = Leaderboard(mapUid, racingData);
+            @onlineStats = OnlineStats();
             start();
         }
     }
     void debug_print(){
         print(leaderboard.toString());
+        print(onlineStats.toString());
         // print(collect.toString());
     }
 }

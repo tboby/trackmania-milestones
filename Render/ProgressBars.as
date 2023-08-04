@@ -727,6 +727,7 @@ void RenderBars()
     auto personalBest = mapWatcher.leaderboard.data.personalBest;
     auto worldRecord = mapWatcher.leaderboard.data.worldRecord;
     auto lastPlaceEstimate = mapWatcher.leaderboard.data.lastPlaceEstimate;
+    auto otherPlayers = mapWatcher.onlineStats.GetLeaderboardEntries();
 
     PlayerStats@ stats = PlayerStats(mapWatcher.leaderboard);
     auto average = stats.Average(5);
@@ -771,6 +772,10 @@ void RenderBars()
     for(uint i = 0; i < oldRecords.Length; i++)
     {
         inputItems.InsertLast(PreviousRecordProgressBarInputItem(oldRecords[i].time, oldRecords[i].pb, false));
+    }
+    for(uint i = 0; i < otherPlayers.Length; i++)
+    {
+        inputItems.InsertLast(SpecialProgressBarInputItem(otherPlayers[i].time, otherPlayers[i].desc, vec4(1.0f, 0.0f, 0.0f, 1.0f)));
     }
 
     RenderProgressBarFromInputs(@pb, inputItems, playerCount, medals, worldRecord.time, personalBest.time, lastPlaceEstimate.time);

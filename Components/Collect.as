@@ -40,6 +40,97 @@ class RacingData {
     array<RaceRecord@> records;
 }
 
+class PlayerLiveTracker {
+    int bestTime = -1;
+
+    PlayerLiveTracker(MLFeed::PlayerCpInfo_V4@ player) {
+        bestTime = player.BestTime;
+    }
+
+    void UpdateFrom(MLFeed::PlayerCpInfo_V4@ player) {
+        bestTime = player.BestTime;
+    }
+}
+
+
+
+// OnlineStats.as
+class OnlineStats : Component {
+    dictionary playerLastCpCounts;
+    int nbPlayers = 0;
+    void handler() override {
+        while(running){
+            auto raceData = MLFeed::GetRaceData_V4();
+            nbPlayers = raceData.SortedPlayers_Race.Length;
+            if (nbPlayers == 0) {
+                playerLastCpCounts.DeleteAll();
+            }
+            for (uint i = 0; i < raceData.SortedPlayers_Race.Length; i++) {
+                auto player = cast<MLFeed::PlayerCpInfo_V4>(raceData.SortedPlayers_Race[i]);
+                if(player.IsLocalPlayer){
+                    continue;
+                }
+                if (!playerLastCpCounts.Exists(player.name)) {
+                    playerLastCpCounts.Set(player.name, @PlayerLiveTracker(player));
+                } else {
+                    auto cpTracker = GetPlayersLiveTracker(player.name);
+                    if (cpTracker is null) {
+                        // warn("cp tracker exists but is null?? " + player.name);
+                        continue;
+                    }
+                    cpTracker.UpdateFrom(player);
+                }
+            }
+
+            yield();
+        }
+    }
+
+
+    // Get list of all player times as leaderboardentries excluding the current player
+    array<LeaderboardEntry@>@ GetLeaderboardEntries() {
+        array<LeaderboardEntry@> entries;
+        for (uint i = 0; i < playerLastCpCounts.GetKeys().Length; i++) {
+            auto name = playerLastCpCounts.GetKeys()[i];
+            auto cpTracker = GetPlayersLiveTracker(name);
+            if (cpTracker is null) {
+                // warn("cp tracker exists but is null?? " + name);
+                continue;
+            }
+            auto entry = LeaderboardEntry();
+            entry.desc = name;
+            entry.time = cpTracker.bestTime;
+            entries.InsertLast(entry);
+        }
+        return entries;
+    }
+
+
+    PlayerLiveTracker@ GetPlayersLiveTracker(const string &in name) {
+        PlayerLiveTracker@ ret = null;
+        if (playerLastCpCounts.Get(name, @ret)) {
+            return ret;
+        }
+        // warn("playerLastCpCounts.Get failed: " + name);
+        return null;
+        // return cast<PlayerCpTracker>(playerLastCpCounts[name]);
+    }
+    string toString() override {
+        string result = "";
+        for (uint i = 0; i < playerLastCpCounts.GetKeys().Length; i++) {
+            auto name = playerLastCpCounts.GetKeys()[i];
+            auto cpTracker = GetPlayersLiveTracker(name);
+            if (cpTracker is null) {
+                // warn("cp tracker exists but is null?? " + name);
+                continue;
+            }
+            result += name + ": " + cpTracker.bestTime + "\n";
+        }
+        return result;
+    }
+
+}
+
 //Collect.as
 // class Collect : Component {
 //     RacingData racingData;
