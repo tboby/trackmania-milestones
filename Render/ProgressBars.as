@@ -66,6 +66,17 @@ class ProgressBarItem : Drawable{
         nvg::Text(prettyTimePos, prettyTime);
 
     }
+
+    // Add compare for sorting
+    int opCmp(const ProgressBarItem@ other) const {
+        if (position < other.position) {
+            return -1;
+        } else if (position == other.position) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
 }
 
 // Progress bar item where multiple have the same time and we want to display them as a stack of labels
@@ -601,6 +612,7 @@ void RenderProgressBarFromInputs(ProgressBar@ pb, array<const ProgressBarInputIt
         inputs[i].toProgressBarItem(1.0f);
         items.InsertLast(inputs[i].toProgressBarItem(interpolation.getPosition(inputs[i].time)));
     }
+    items.SortAsc();
     items = CombineStackedItems(items, 0.01f);
     // //medal color
     // vec4 gold = vec4(1.0f, 0.8f, 0.0f, 1.0f);
